@@ -1,0 +1,2515 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>vía Transparencia · Base de datos de solicitudes de acceso</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=IBM+Plex+Mono:wght@400;500&family=Libre+Franklin:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0f0e0d;
+    --paper: #f5f1ea;
+    --cream: #ede8df;
+    --accent: #c0392b;
+    --accent2: #2c6e49;
+    --tg: #229ED9;
+    --muted: #7a7670;
+    --border: #c8c2b8;
+    --card: #ffffff;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Libre Franklin', sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  /* ── HEADER ── */
+  header {
+    border-bottom: 3px solid var(--ink);
+    background: var(--paper);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .header-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 32px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .logo { display: flex; align-items: center; gap: 0; cursor: pointer; }
+  .logo svg { display: block; }
+
+  .header-stats { display: flex; gap: 28px; }
+
+  .stat-pill { text-align: center; }
+  .stat-pill .num {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1;
+  }
+  .stat-pill .label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    color: var(--muted);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+  }
+
+  nav {
+    padding: 8px 32px;
+    display: flex;
+    gap: 4px;
+    align-items: center;
+  }
+
+  nav a, nav button.nav-btn {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-decoration: none;
+    padding: 5px 12px;
+    border-radius: 2px;
+    transition: all 0.15s;
+    background: none;
+    border: none;
+    cursor: pointer;
+  }
+
+  nav a:hover, nav a.active,
+  nav button.nav-btn:hover, nav button.nav-btn.active {
+    color: var(--ink);
+    background: var(--cream);
+  }
+
+  nav .nav-cta {
+    margin-left: auto;
+    background: var(--tg);
+    color: white !important;
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  nav .nav-cta:hover { opacity: 0.88; background: var(--tg); }
+
+  /* ── PAGES ── */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* ── HERO ── */
+  .hero {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 48px 32px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 300px; height: 300px;
+    border-radius: 50%;
+    border: 60px solid rgba(192,57,43,0.12);
+  }
+  .hero-inner { max-width: 900px; }
+  .hero-tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 12px;
+  }
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(28px, 4vw, 46px);
+    font-weight: 900;
+    line-height: 1.1;
+    margin-bottom: 16px;
+  }
+  .hero h1 em { font-style: italic; color: #d4c9b8; }
+  .hero p { font-size: 15px; color: #b8b0a4; max-width: 580px; line-height: 1.7; }
+
+  /* ── MAIN LAYOUT ── */
+  .main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 32px;
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 40px;
+  }
+
+  /* ── SEARCH & FILTERS ── */
+  .search-bar {
+    display: flex;
+    border: 2px solid var(--ink);
+    background: white;
+    margin-bottom: 24px;
+  }
+  .search-bar input {
+    flex: 1;
+    padding: 12px 16px;
+    border: none;
+    outline: none;
+    font-family: 'Libre Franklin', sans-serif;
+    font-size: 14px;
+    background: transparent;
+  }
+  .search-bar button {
+    background: var(--ink);
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+
+  .filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 28px; }
+
+  .filter-chip {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 5px 12px;
+    border: 1.5px solid var(--border);
+    background: transparent;
+    cursor: pointer;
+    transition: all 0.15s;
+    color: var(--muted);
+    border-radius: 2px;
+  }
+  .filter-chip:hover, .filter-chip.active { border-color: var(--ink); color: var(--ink); background: var(--cream); }
+  .filter-chip.result-ok { border-color: var(--accent2); color: var(--accent2); }
+  .filter-chip.result-ok.active { background: var(--accent2); color: white; }
+  .filter-chip.result-ko { border-color: var(--accent); color: var(--accent); }
+  .filter-chip.result-ko.active { background: var(--accent); color: white; }
+
+  /* ── SECTION HEAD ── */
+  .section-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 1.5px solid var(--ink);
+  }
+  .section-head h2 { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; }
+  .section-head span { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--muted); letter-spacing: 1px; }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    margin-bottom: 16px;
+    padding: 20px 24px;
+    position: relative;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    cursor: pointer;
+  }
+  .card:hover { border-color: var(--ink); box-shadow: 4px 4px 0 var(--ink); }
+  .card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+  }
+  .card.ok::before { background: var(--accent2); }
+  .card.ko::before { background: var(--accent); }
+  .card.silencio::before { background: #e8a020; }
+  .card.parcial::before { background: #3a6bc4; }
+
+  .card-meta { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+
+  .badge {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 2px;
+    font-weight: 500;
+  }
+  .badge-ok { background: #d4edda; color: #1a5c32; }
+  .badge-ko { background: #fde8e6; color: #7a1a10; }
+  .badge-silencio { background: #fff3cd; color: #664d00; }
+  .badge-parcial { background: #dde9ff; color: #1a3a7a; }
+
+  .card-org { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; }
+  .card-date { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--muted); margin-left: auto; }
+  .card h3 { font-family: 'Playfair Display', serif; font-size: 17px; font-weight: 700; line-height: 1.3; margin-bottom: 8px; }
+  .card p { font-size: 13px; color: #555; line-height: 1.6; margin-bottom: 12px; }
+  .card-footer { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+  .tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--muted);
+    background: var(--cream);
+    padding: 3px 8px;
+    border-radius: 2px;
+  }
+  .card-link { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--accent); text-decoration: none; letter-spacing: 0.5px; margin-left: auto; }
+  .card-link:hover { text-decoration: underline; }
+
+  /* ── SIDEBAR ── */
+  aside { display: flex; flex-direction: column; gap: 24px; }
+
+  .widget { background: var(--card); border: 1.5px solid var(--border); padding: 20px; }
+  .widget-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .stat-box { background: var(--cream); padding: 12px; text-align: center; }
+  .stat-box .n { font-family: 'Playfair Display', serif; font-size: 26px; font-weight: 700; line-height: 1; }
+  .stat-box .n.ok { color: var(--accent2); }
+  .stat-box .n.ko { color: var(--accent); }
+  .stat-box .n.sil { color: #c47a00; }
+  .stat-box .l { font-family: 'IBM Plex Mono', monospace; font-size: 9px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin-top: 4px; }
+
+  .bar-row { margin-bottom: 10px; }
+  .bar-label { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 4px; }
+  .bar-label span:last-child { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--muted); }
+  .bar-track { height: 6px; background: var(--cream); overflow: hidden; }
+  .bar-fill { height: 100%; background: var(--ink); }
+
+  .widget-tg { background: var(--tg); color: white; border: none; }
+  .widget-tg .widget-title { color: rgba(255,255,255,0.5); border-bottom-color: rgba(255,255,255,0.15); }
+  .widget-tg p { font-size: 13px; color: rgba(255,255,255,0.85); line-height: 1.6; margin-bottom: 16px; }
+
+  .btn-tg {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: white;
+    color: var(--tg);
+    padding: 10px 16px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    text-decoration: none;
+    font-weight: 500;
+    transition: opacity 0.15s;
+    border: none;
+    cursor: pointer;
+    width: 100%;
+  }
+  .btn-tg:hover { opacity: 0.9; }
+
+  /* ── PAGE: PROPONER ── */
+  .page-inner {
+    max-width: 820px;
+    margin: 48px auto;
+    padding: 0 32px 64px;
+  }
+
+  .page-header {
+    margin-bottom: 40px;
+    padding-bottom: 24px;
+    border-bottom: 2px solid var(--ink);
+  }
+  .page-header .eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 10px;
+  }
+  .page-header h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 36px;
+    font-weight: 900;
+    line-height: 1.1;
+    margin-bottom: 14px;
+  }
+  .page-header p { font-size: 15px; color: var(--muted); line-height: 1.7; max-width: 640px; }
+
+  /* Form */
+  .form-group { margin-bottom: 24px; }
+  .form-group label {
+    display: block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .form-group label .req { color: var(--accent); }
+  .form-group input, .form-group textarea, .form-group select {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1.5px solid var(--border);
+    background: white;
+    font-family: 'Libre Franklin', sans-serif;
+    font-size: 14px;
+    color: var(--ink);
+    outline: none;
+    transition: border-color 0.15s;
+    border-radius: 0;
+    appearance: none;
+  }
+  .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+    border-color: var(--ink);
+  }
+  .form-group textarea { resize: vertical; min-height: 100px; }
+  .form-hint { font-size: 12px; color: var(--muted); margin-top: 5px; line-height: 1.5; }
+
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+  .auth-box {
+    background: var(--cream);
+    border: 1.5px solid var(--border);
+    padding: 20px 24px;
+    margin-bottom: 28px;
+  }
+  .auth-box .auth-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 14px;
+  }
+
+  .checkbox-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .checkbox-row input[type="radio"],
+  .checkbox-row input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    margin-top: 2px;
+    flex-shrink: 0;
+    accent-color: var(--ink);
+    cursor: pointer;
+  }
+  .checkbox-row label {
+    font-family: 'Libre Franklin', sans-serif;
+    font-size: 13px;
+    color: var(--ink);
+    letter-spacing: 0;
+    text-transform: none;
+    line-height: 1.5;
+    cursor: pointer;
+  }
+  .checkbox-row label strong { font-weight: 600; }
+  .checkbox-row label em { color: var(--muted); font-style: normal; }
+
+  .btn-primary {
+    background: var(--ink);
+    color: white;
+    border: none;
+    padding: 14px 32px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: opacity 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .btn-primary:hover { opacity: 0.85; }
+  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* ── AI RESULT BOX ── */
+  #resultado-solicitud {
+    display: none;
+    margin-top: 40px;
+    border: 2px solid var(--ink);
+    animation: fadeUp 0.3s ease;
+  }
+
+  @keyframes fadeUp {
+    from { transform: translateY(10px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  .resultado-header {
+    background: var(--ink);
+    color: white;
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .resultado-header span {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.6);
+  }
+  .resultado-header strong {
+    font-family: 'Playfair Display', serif;
+    font-size: 16px;
+    font-weight: 700;
+  }
+
+  #solicitud-texto {
+    padding: 28px 32px;
+    background: white;
+    font-size: 14px;
+    line-height: 1.8;
+    color: var(--ink);
+    white-space: pre-wrap;
+    font-family: 'Libre Franklin', sans-serif;
+    min-height: 80px;
+  }
+
+  .resultado-footer {
+    background: var(--cream);
+    padding: 16px 24px;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+    border-top: 1px solid var(--border);
+  }
+
+  .btn-copy {
+    background: var(--ink);
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  .btn-copy:hover { opacity: 0.85; }
+
+  .btn-secondary-outline {
+    background: transparent;
+    color: var(--ink);
+    border: 1.5px solid var(--border);
+    padding: 10px 18px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-decoration: none;
+    display: inline-block;
+  }
+  .btn-secondary-outline:hover { border-color: var(--ink); }
+
+  .resultado-nota {
+    font-size: 12px;
+    color: var(--muted);
+    margin-left: auto;
+    line-height: 1.4;
+    max-width: 300px;
+    text-align: right;
+  }
+
+  /* ── LOADING SPINNER ── */
+  .generating {
+    display: none;
+    align-items: center;
+    gap: 14px;
+    padding: 24px 32px;
+    background: white;
+    border: 2px solid var(--border);
+    margin-top: 32px;
+  }
+  .generating.show { display: flex; }
+  .spinner {
+    width: 24px; height: 24px;
+    border: 3px solid var(--cream);
+    border-top-color: var(--ink);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    flex-shrink: 0;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .generating p { font-size: 13px; color: var(--muted); }
+  .generating p strong { color: var(--ink); display: block; margin-bottom: 2px; }
+
+  /* ── PAGE: CONTACTO ── */
+  .contacto-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    margin-top: 32px;
+  }
+
+  .contacto-card {
+    border: 2px solid var(--border);
+    padding: 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .contacto-card:hover { border-color: var(--ink); box-shadow: 4px 4px 0 var(--ink); }
+
+  .contacto-card .icon-wrap {
+    width: 48px; height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    background: var(--cream);
+  }
+  .contacto-card.tg-card { background: var(--tg); border-color: var(--tg); color: white; }
+  .contacto-card.tg-card:hover { box-shadow: 4px 4px 0 rgba(34,158,217,0.4); border-color: var(--tg); }
+  .contacto-card.tg-card .icon-wrap { background: rgba(255,255,255,0.2); }
+
+  .contacto-card h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 700;
+  }
+  .contacto-card p { font-size: 13px; line-height: 1.7; color: var(--muted); }
+  .contacto-card.tg-card p { color: rgba(255,255,255,0.8); }
+
+  .btn-tg-large {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: white;
+    color: var(--tg);
+    padding: 12px 20px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    text-decoration: none;
+    font-weight: 500;
+    margin-top: auto;
+  }
+  .btn-tg-large:hover { opacity: 0.9; }
+
+  .contacto-form-inline input,
+  .contacto-form-inline textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1.5px solid var(--border);
+    background: white;
+    font-family: 'Libre Franklin', sans-serif;
+    font-size: 13px;
+    color: var(--ink);
+    outline: none;
+    margin-bottom: 10px;
+    border-radius: 0;
+  }
+  .contacto-form-inline input:focus,
+  .contacto-form-inline textarea:focus { border-color: var(--ink); }
+  .contacto-form-inline textarea { min-height: 80px; resize: vertical; }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15,14,13,0.75);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--paper);
+    max-width: 680px;
+    width: 100%;
+    max-height: 85vh;
+    overflow-y: auto;
+    border: 2px solid var(--ink);
+    box-shadow: 8px 8px 0 var(--ink);
+    animation: slideIn 0.2s ease;
+  }
+  @keyframes slideIn {
+    from { transform: translateY(12px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  .modal-header {
+    padding: 20px 28px 16px;
+    border-bottom: 1.5px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: var(--paper);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+  .modal-close {
+    background: none;
+    border: none;
+    font-size: 22px;
+    cursor: pointer;
+    color: var(--muted);
+    line-height: 1;
+    padding: 0 4px;
+  }
+  .modal-body { padding: 24px 28px; }
+  .modal-body h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.3;
+    margin-bottom: 16px;
+  }
+  .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+  .meta-item { background: var(--cream); padding: 10px 14px; }
+  .meta-item .key { font-family: 'IBM Plex Mono', monospace; font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+  .meta-item .val { font-size: 13px; font-weight: 500; }
+  .section-label { font-family: 'IBM Plex Mono', monospace; font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin: 18px 0 8px; }
+  .modal-body p { font-size: 14px; line-height: 1.7; color: #333; }
+
+  .resultado-banner { margin-top: 20px; padding: 14px 18px; display: flex; align-items: center; gap: 12px; }
+  .resultado-banner.ok { background: #d4edda; border-left: 4px solid var(--accent2); }
+  .resultado-banner.ko { background: #fde8e6; border-left: 4px solid var(--accent); }
+  .resultado-banner.silencio { background: #fff3cd; border-left: 4px solid #e8a020; }
+  .resultado-banner.parcial { background: #dde9ff; border-left: 4px solid #3a6bc4; }
+  .resultado-banner .icon { font-size: 20px; }
+  .resultado-banner .text { font-size: 13px; line-height: 1.5; }
+  .resultado-banner .text strong { display: block; font-size: 14px; margin-bottom: 2px; }
+
+  /* ── ABOUT STRIP ── */
+  .about-strip {
+    background: var(--cream);
+    border-top: 2px solid var(--border);
+    padding: 24px 32px;
+    display: flex;
+    gap: 32px;
+    align-items: center;
+  }
+  .about-strip p { font-size: 13px; color: var(--muted); max-width: 640px; line-height: 1.7; }
+  .about-strip strong { color: var(--ink); }
+
+  footer {
+    background: var(--ink);
+    color: rgba(255,255,255,0.4);
+    padding: 20px 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  footer span { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 1px; }
+
+  /* ── CONFIRM BOX ── */
+  .confirm-box {
+    display: none;
+    margin-top: 24px;
+    background: #d4edda;
+    border: 1.5px solid var(--accent2);
+    padding: 18px 22px;
+    animation: fadeUp 0.3s ease;
+  }
+  .confirm-box.show { display: block; }
+  .confirm-box p { font-size: 14px; color: #1a5c32; line-height: 1.6; }
+  .confirm-box strong { font-weight: 600; }
+
+  /* ── TOOL SELECTOR ── */
+  .tool-tabs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3px;
+    margin-bottom: 36px;
+  }
+  .tool-tab {
+    border: 2px solid var(--border);
+    padding: 20px 24px;
+    cursor: pointer;
+    background: white;
+    text-align: left;
+    transition: all 0.15s;
+    position: relative;
+  }
+  .tool-tab:hover { border-color: var(--ink); }
+  .tool-tab.active { border-color: var(--ink); background: var(--ink); color: white; }
+  .tool-tab .tab-icon { font-size: 22px; margin-bottom: 8px; display: block; }
+  .tool-tab .tab-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 17px;
+    font-weight: 700;
+    display: block;
+    margin-bottom: 4px;
+  }
+  .tool-tab .tab-desc { font-size: 12px; line-height: 1.5; color: var(--muted); }
+  .tool-tab.active .tab-desc { color: rgba(255,255,255,0.6); }
+  .tool-tab .tab-badge {
+    position: absolute;
+    top: 12px; right: 12px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 8px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    background: var(--accent);
+    color: white;
+    border-radius: 2px;
+  }
+  .tool-tab.active .tab-badge { background: rgba(255,255,255,0.2); }
+
+  /* Panel de herramienta */
+  .tool-panel { display: none; }
+  .tool-panel.active { display: block; }
+
+  /* Selector de consejo */
+  .consejo-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .consejo-chip {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 8px 10px;
+    border: 1.5px solid var(--border);
+    background: white;
+    cursor: pointer;
+    color: var(--muted);
+    text-align: center;
+    transition: all 0.15s;
+    border-radius: 2px;
+    line-height: 1.4;
+  }
+  .consejo-chip:hover { border-color: var(--ink); color: var(--ink); }
+  .consejo-chip.active { border-color: var(--ink); background: var(--ink); color: white; }
+
+  /* Motivo denegación */
+  .motivo-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .motivo-chip {
+    font-size: 12px;
+    padding: 10px 14px;
+    border: 1.5px solid var(--border);
+    background: white;
+    cursor: pointer;
+    color: var(--ink);
+    text-align: left;
+    transition: all 0.15s;
+    line-height: 1.4;
+  }
+  .motivo-chip:hover { border-color: var(--ink); }
+  .motivo-chip.active { border-color: var(--accent); background: #fde8e6; }
+  .motivo-chip .motivo-art {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    color: var(--accent);
+    display: block;
+    margin-bottom: 2px;
+    letter-spacing: 0.5px;
+  }
+
+  /* Resultado box con tabs */
+  .resultado-tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 2px solid var(--ink);
+    margin-bottom: 0;
+  }
+  .resultado-tab-btn {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 10px 16px;
+    border: none;
+    background: var(--cream);
+    color: var(--muted);
+    cursor: pointer;
+    border-right: 1px solid var(--border);
+  }
+  .resultado-tab-btn.active { background: var(--ink); color: white; }
+
+  @media (max-width: 820px) {
+    .tool-tabs { grid-template-columns: 1fr; }
+    .consejo-grid { grid-template-columns: repeat(2,1fr); }
+    .motivo-grid { grid-template-columns: 1fr; }
+  }
+
+  /* ══ DOCTRINA DE CONSEJOS ══ */
+  .doctrina-layout {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 40px 32px 80px;
+  }
+
+  .doctrina-filters {
+    background: white;
+    border: 1.5px solid var(--border);
+    padding: 24px 28px;
+    margin-bottom: 32px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr auto;
+    gap: 16px;
+    align-items: end;
+  }
+
+  .df-group label {
+    display: block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 7px;
+  }
+
+  .df-group select, .df-group input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1.5px solid var(--border);
+    background: white;
+    font-family: 'Libre Franklin', sans-serif;
+    font-size: 13px;
+    color: var(--ink);
+    outline: none;
+    appearance: none;
+    border-radius: 0;
+    transition: border-color 0.15s;
+  }
+  .df-group select:focus, .df-group input:focus { border-color: var(--ink); }
+
+  .btn-buscar {
+    background: var(--ink);
+    color: white;
+    border: none;
+    padding: 11px 24px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: opacity 0.15s;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 42px;
+  }
+  .btn-buscar:hover { opacity: 0.85; }
+  .btn-buscar:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* Estado vacío / bienvenida */
+  .doctrina-empty {
+    text-align: center;
+    padding: 64px 32px;
+    border: 1.5px dashed var(--border);
+    background: white;
+  }
+  .doctrina-empty .empty-icon { font-size: 48px; margin-bottom: 16px; }
+  .doctrina-empty h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .doctrina-empty p { font-size: 13px; color: var(--muted); line-height: 1.7; max-width: 480px; margin: 0 auto; }
+
+  /* Spinner de búsqueda */
+  .doctrina-searching {
+    display: none;
+    text-align: center;
+    padding: 56px 32px;
+    border: 1.5px solid var(--border);
+    background: white;
+  }
+  .doctrina-searching.show { display: block; }
+  .search-spinner {
+    width: 36px; height: 36px;
+    border: 4px solid var(--cream);
+    border-top-color: var(--ink);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 16px;
+  }
+  .doctrina-searching h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 17px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .doctrina-searching p { font-size: 13px; color: var(--muted); line-height: 1.6; }
+  .searching-steps {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+  }
+  .step-pill {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 5px 12px;
+    border: 1px solid var(--border);
+    opacity: 0.4;
+    transition: all 0.3s;
+  }
+  .step-pill.active { opacity: 1; border-color: var(--ink); color: var(--ink); }
+  .step-pill.done { opacity: 1; border-color: var(--accent2); color: var(--accent2); background: #d4edda; }
+
+  /* Lista de resultados */
+  .doctrina-results { display: none; }
+  .doctrina-results.show { display: block; }
+
+  .results-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--ink);
+    margin-bottom: 20px;
+  }
+  .results-header h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    font-weight: 700;
+  }
+  .results-meta {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 1px;
+  }
+
+  /* Tarjeta de resolución */
+  .res-card {
+    background: white;
+    border: 1.5px solid var(--border);
+    margin-bottom: 20px;
+    overflow: hidden;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .res-card:hover { border-color: #aaa; box-shadow: 3px 3px 0 var(--ink); }
+
+  .res-card-head {
+    padding: 18px 24px 14px;
+    border-bottom: 1px solid var(--cream);
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .res-consejo-badge {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 8px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 4px 9px;
+    background: var(--ink);
+    color: white;
+    white-space: nowrap;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .res-head-info { flex: 1; }
+
+  .res-ref {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    color: var(--accent);
+    letter-spacing: 1px;
+    margin-bottom: 5px;
+  }
+
+  .res-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1.3;
+    margin-bottom: 6px;
+  }
+
+  .res-meta-row {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+
+  .res-meta-item {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    color: var(--muted);
+    letter-spacing: 0.5px;
+  }
+
+  .res-fallo {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 2px;
+    flex-shrink: 0;
+    margin-top: 2px;
+    white-space: nowrap;
+  }
+  .res-fallo.estimada   { background: #d4edda; color: #1a5c32; }
+  .res-fallo.desestimada { background: #fde8e6; color: #7a1a10; }
+  .res-fallo.parcial    { background: #dde9ff; color: #1a3a7a; }
+
+  /* Resumen desplegable */
+  .res-summary {
+    border-top: 1px solid var(--cream);
+  }
+
+  .res-col {
+    border-bottom: 1px solid var(--cream);
+  }
+  .res-col:last-child { border-bottom: none; }
+
+  .res-col-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 8.5px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 11px 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.12s;
+  }
+  .res-col-title:hover { background: #fafafa; }
+
+  .res-col-title .col-arrow {
+    margin-left: auto;
+    font-size: 10px;
+    color: var(--muted);
+    transition: transform 0.2s;
+    display: inline-block;
+  }
+  .res-col.open .col-arrow { transform: rotate(180deg); }
+
+  .col-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .res-col:nth-child(1) .col-dot { background: var(--accent); }
+  .res-col:nth-child(2) .col-dot { background: #3a6bc4; }
+  .res-col:nth-child(3) .col-dot { background: var(--accent2); }
+  .res-col:nth-child(1) .res-col-title { color: var(--accent); }
+  .res-col:nth-child(2) .res-col-title { color: #3a6bc4; }
+  .res-col:nth-child(3) .res-col-title { color: var(--accent2); }
+
+  .res-col-body {
+    display: none;
+    padding: 2px 20px 14px;
+    border-top: 1px dashed var(--cream);
+    background: #fdfcfb;
+  }
+  .res-col.open .res-col-body { display: block; }
+
+  .res-bullets {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .res-bullets li {
+    font-size: 12px;
+    line-height: 1.6;
+    color: #333;
+    padding: 5px 0 5px 14px;
+    position: relative;
+    border-bottom: 1px solid #f0eeeb;
+  }
+  .res-bullets li:last-child { border-bottom: none; }
+  .res-bullets li::before {
+    content: '–';
+    position: absolute;
+    left: 0;
+    color: var(--muted);
+    font-size: 11px;
+  }
+
+  .res-footer {
+    padding: 10px 20px;
+    background: var(--cream);
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .res-link {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    color: var(--accent);
+    text-decoration: none;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .res-link:hover { text-decoration: underline; }
+
+  .res-usar-btn {
+    margin-left: auto;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 5px 12px;
+    border: 1.5px solid var(--ink);
+    background: transparent;
+    cursor: pointer;
+    color: var(--ink);
+    transition: all 0.15s;
+  }
+  .res-usar-btn:hover { background: var(--ink); color: white; }
+
+  /* Error box */
+  .doctrina-error {
+    display: none;
+    padding: 24px 28px;
+    background: #fde8e6;
+    border: 1.5px solid var(--accent);
+    margin-bottom: 20px;
+  }
+  .doctrina-error.show { display: block; }
+  .doctrina-error p { font-size: 13px; color: #7a1a10; line-height: 1.6; }
+
+  @media (max-width: 820px) {
+    .doctrina-filters { grid-template-columns: 1fr 1fr; }
+    .res-summary { display: block; }
+    .res-col { border-right: none; }
+    .doctrina-layout { padding: 24px 20px 48px; }
+    .searching-steps { gap: 8px; }
+  }
+
+  /* ── RESPONSIVE (additions) ── */
+  @media (max-width: 820px) {
+    .redactar-inner { padding: 0 20px 48px; }
+  }
+
+    .main { grid-template-columns: 1fr; padding: 20px; }
+    aside { display: none; }
+    .header-stats { display: none; }
+    .header-top { padding: 12px 20px; }
+    nav { padding: 8px 16px; overflow-x: auto; white-space: nowrap; }
+    .hero { padding: 32px 20px; }
+    .form-row { grid-template-columns: 1fr; }
+    .contacto-grid { grid-template-columns: 1fr; }
+    .page-inner { padding: 0 20px 48px; }
+    .about-strip { flex-direction: column; gap: 16px; padding: 20px; }
+    footer { flex-direction: column; gap: 8px; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Formularios ocultos para que Netlify los detecte en el build -->
+<form name="contacto" data-netlify="true" hidden>
+  <input type="text" name="nombre">
+  <input type="email" name="email">
+  <textarea name="mensaje"></textarea>
+</form>
+<form name="propuesta" data-netlify="true" hidden>
+  <input type="text"  name="organismo">
+  <input type="text"  name="tema">
+  <textarea name="descripcion"></textarea>
+  <textarea name="contexto"></textarea>
+  <input type="email" name="email">
+  <input type="text"  name="autorizacion">
+</form>
+
+<header>
+  <div class="header-top">
+    <div class="logo" onclick="showPage('resoluciones', document.querySelector('.nav-btn'))">
+      <svg viewBox="0 0 310 68" xmlns="http://www.w3.org/2000/svg" height="52" width="auto">
+        <!-- Barras redactadas -->
+        <rect x="0" y="2" width="92" height="9" rx="1.5" fill="#0f0e0d"/>
+        <rect x="0" y="15" width="72" height="9" rx="1.5" fill="#0f0e0d"/>
+        <rect x="0" y="28" width="84" height="9" rx="1.5" fill="#0f0e0d"/>
+        <!-- Marco zona libre -->
+        <rect x="0" y="41" width="92" height="22" rx="2" fill="none" stroke="#c0392b" stroke-width="1.8" stroke-dasharray="4,2.5"/>
+        <!-- Nombre dentro del marco -->
+        <text x="46" y="57" font-family="'Playfair Display',serif" font-size="13.5" fill="#0f0e0d" text-anchor="middle" font-weight="900"><tspan font-style="italic" fill="#c0392b">vía</tspan><tspan> Transp.</tspan></text>
+        <!-- Separador -->
+        <line x1="108" y1="4" x2="108" y2="64" stroke="#c8c2b8" stroke-width="1.5"/>
+        <!-- Wordmark completo -->
+        <text x="124" y="24" font-family="'Playfair Display',serif" font-size="13" fill="#c0392b" font-style="italic" font-weight="700">vía</text>
+        <text x="124" y="50" font-family="'Playfair Display',serif" font-size="26" fill="#0f0e0d" font-weight="900" letter-spacing="-0.5">Transparencia</text>
+      </svg>
+    </div>
+    <div class="header-stats">
+      <div class="stat-pill">
+        <div class="num">47</div>
+        <div class="label">Solicitudes</div>
+      </div>
+      <div class="stat-pill">
+        <div class="num">68%</div>
+        <div class="label">Estimadas</div>
+      </div>
+      <div class="stat-pill">
+        <div class="num">38d</div>
+        <div class="label">Espera media</div>
+      </div>
+    </div>
+  </div>
+  <nav>
+    <button class="nav-btn active" onclick="showPage('resoluciones', this)">Resoluciones</button>
+    <button class="nav-btn" onclick="showPage('doctrina', this)">Doctrina de consejos</button>
+    <button class="nav-btn" onclick="showPage('redactar', this)">Redactar documento</button>
+    <button class="nav-btn" onclick="showPage('proponer', this)">Proponer solicitud</button>
+    <button class="nav-btn" onclick="showPage('contacto', this)">Contacto</button>
+    <a href="https://t.me/+4h4LNTUOAY8yMzM0" target="_blank" class="nav-btn nav-cta">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.562 8.248l-2.008 9.461c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12l-6.871 4.326-2.962-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.871.76z"/></svg>
+      Canal Telegram
+    </a>
+  </nav>
+</header>
+
+<!-- ══════════════════════════════════════════
+     PAGE: RESOLUCIONES
+══════════════════════════════════════════ -->
+<div id="page-resoluciones" class="page active">
+
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="hero-tag">· Periodismo ciudadano · Transparencia pública ·</div>
+      <h1>Pedimos. Esperamos.<br><em>Publicamos lo que nos responden.</em></h1>
+      <p>Todas las solicitudes de acceso a la información pública que hemos tramitado, documentadas con el contexto que necesitas para entender qué nos dijo —o nos ocultó— cada administración.</p>
+    </div>
+  </div>
+
+  <div class="main">
+    <main>
+      <div class="search-bar">
+        <input type="text" placeholder="Buscar por organismo, tema o palabras clave…" id="searchInput">
+        <button>Buscar</button>
+      </div>
+      <div class="filters">
+        <span class="filter-chip active" onclick="filterCards('all', this)">Todas</span>
+        <span class="filter-chip result-ok" onclick="filterCards('ok', this)">✓ Estimadas</span>
+        <span class="filter-chip result-ko" onclick="filterCards('ko', this)">✗ Desestimadas</span>
+        <span class="filter-chip" style="border-color:#c47a00;color:#c47a00" onclick="filterCards('silencio', this)">⏱ Silencio</span>
+        <span class="filter-chip" style="border-color:#3a6bc4;color:#3a6bc4" onclick="filterCards('parcial', this)">≈ Parciales</span>
+      </div>
+      <div class="section-head">
+        <h2>Últimas resoluciones</h2>
+        <span id="count">Mostrando 6 de 47</span>
+      </div>
+
+      <div id="card-list">
+        <div class="card ok" onclick="openModal(0)">
+          <div class="card-meta">
+            <span class="badge badge-ok">✓ Estimada</span>
+            <span class="card-org">Ministerio de Hacienda</span>
+            <span class="card-date">Ene 2025</span>
+          </div>
+          <h3>Contratos de consultoría externa durante la pandemia (2020-2021)</h3>
+          <p>Solicitamos el listado completo de contratos con consultoras privadas. Nos entregaron 143 contratos por 28,4 M€.</p>
+          <div class="card-footer">
+            <span class="tag">Contratación</span><span class="tag">COVID-19</span>
+            <a class="card-link" href="#">Ver ficha →</a>
+          </div>
+        </div>
+
+        <div class="card ko" onclick="openModal(1)">
+          <div class="card-meta">
+            <span class="badge badge-ko">✗ Desestimada</span>
+            <span class="card-org">Ayuntamiento de Madrid</span>
+            <span class="card-date">Feb 2025</span>
+          </div>
+          <h3>Informes técnicos sobre la ampliación del BRT en la M-30</h3>
+          <p>Denegaron alegando expediente en tramitación. Recurrimos al Consejo de Transparencia.</p>
+          <div class="card-footer">
+            <span class="tag">Movilidad</span><span class="tag">Infraestructuras</span>
+            <a class="card-link" href="#">Ver ficha →</a>
+          </div>
+        </div>
+
+        <div class="card silencio" onclick="openModal(2)">
+          <div class="card-meta">
+            <span class="badge badge-silencio">⏱ Silencio admin.</span>
+            <span class="card-org">Consejería de Sanidad · C. Madrid</span>
+            <span class="card-date">Mar 2025</span>
+          </div>
+          <h3>Ratios de personal de enfermería por planta en hospitales públicos</h3>
+          <p>87 días sin respuesta. El plazo legal son 30. Hemos reclamado ante el órgano garante.</p>
+          <div class="card-footer">
+            <span class="tag">Sanidad</span><span class="tag">Personal</span>
+            <a class="card-link" href="#">Ver ficha →</a>
+          </div>
+        </div>
+
+        <div class="card parcial" onclick="openModal(3)">
+          <div class="card-meta">
+            <span class="badge badge-parcial">≈ Parcial</span>
+            <span class="card-org">ADIF</span>
+            <span class="card-date">Mar 2025</span>
+          </div>
+          <h3>Retrasos acumulados por línea de Cercanías en 2024</h3>
+          <p>Entregaron los datos globales pero ocultaron el desglose horario. C-3 y C-5, las más puntuales en fallar.</p>
+          <div class="card-footer">
+            <span class="tag">Transporte</span><span class="tag">Ferroviario</span>
+            <a class="card-link" href="#">Ver ficha →</a>
+          </div>
+        </div>
+
+        <div class="card ok" onclick="openModal(4)">
+          <div class="card-meta">
+            <span class="badge badge-ok">✓ Estimada</span>
+            <span class="card-org">SEPE</span>
+            <span class="card-date">Mar 2025</span>
+          </div>
+          <h3>Expedientes de regulación de empleo por sector (2023)</h3>
+          <p>Base de datos completa de EREs: 1.847 expedientes en formato CSV, disponible para descarga.</p>
+          <div class="card-footer">
+            <span class="tag">Empleo</span><span class="tag">Datos abiertos</span>
+            <a class="card-link" href="#">Ver ficha →</a>
+          </div>
+        </div>
+
+        <div class="card ko" onclick="openModal(5)">
+          <div class="card-meta">
+            <span class="badge badge-ko">✗ Desestimada</span>
+            <span class="card-org">Banco de España</span>
+            <span class="card-date">Abr 2025</span>
+          </div>
+          <h3>Actas del Comité de Estabilidad Financiera (2023)</h3>
+          <p>Rechazada por tercera vez. Usan sistemáticamente la excepción de política económica para blindar sus deliberaciones.</p>
+          <div class="card-footer">
+            <span class="tag">Finanzas</span><span class="tag">Regulación</span>
+            <a class="card-link" href="#">Ver ficha →</a>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <aside>
+      <div class="widget">
+        <div class="widget-title">· Resumen global ·</div>
+        <div class="stats-grid">
+          <div class="stat-box"><div class="n ok">32</div><div class="l">Estimadas</div></div>
+          <div class="stat-box"><div class="n ko">9</div><div class="l">Denegadas</div></div>
+          <div class="stat-box"><div class="n sil">4</div><div class="l">Silencio</div></div>
+          <div class="stat-box"><div class="n" style="color:#3a6bc4">2</div><div class="l">Parciales</div></div>
+        </div>
+      </div>
+
+      <div class="widget">
+        <div class="widget-title">· Organismos más solicitados ·</div>
+        <div class="bar-row"><div class="bar-label"><span>Ministerio de Hacienda</span><span>11</span></div><div class="bar-track"><div class="bar-fill" style="width:70%"></div></div></div>
+        <div class="bar-row"><div class="bar-label"><span>Ayto. de Madrid</span><span>8</span></div><div class="bar-track"><div class="bar-fill" style="width:51%"></div></div></div>
+        <div class="bar-row"><div class="bar-label"><span>ADIF</span><span>6</span></div><div class="bar-track"><div class="bar-fill" style="width:38%"></div></div></div>
+        <div class="bar-row"><div class="bar-label"><span>Banco de España</span><span>5</span></div><div class="bar-track"><div class="bar-fill" style="width:31%"></div></div></div>
+        <div class="bar-row"><div class="bar-label"><span>Consejería Sanidad</span><span>4</span></div><div class="bar-track"><div class="bar-fill" style="width:25%"></div></div></div>
+      </div>
+
+      <div class="widget widget-tg">
+        <div class="widget-title">· Síguenos ·</div>
+        <p>Publicamos cada resolución cuando llega. Únete al canal para no perderte ninguna.</p>
+        <a href="https://t.me/+4h4LNTUOAY8yMzM0" target="_blank" class="btn-tg">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.562 8.248l-2.008 9.461c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12l-6.871 4.326-2.962-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.871.76z"/></svg>
+          Unirse al canal →
+        </a>
+      </div>
+
+      <div class="widget">
+        <div class="widget-title">· ¿Tienes una idea? ·</div>
+        <p style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:14px">¿Sabes de algo que debería ser público? Proponlo y te redactamos la solicitud.</p>
+        <button onclick="showPage('proponer', document.querySelector('.nav-btn:nth-child(2)'))" class="btn-primary" style="width:100%;justify-content:center">Proponer →</button>
+      </div>
+    </aside>
+  </div>
+
+  <div class="about-strip">
+    <p><strong>¿Qué es vía Transparencia?</strong> Somos dos ciudadanas que usan la Ley de Transparencia para pedir documentos a las administraciones. Documentamos cada solicitud y publicamos los resultados. Todo el material original está disponible para su reutilización bajo CC BY-SA.</p>
+    <button onclick="showPage('contacto', document.querySelector('.nav-btn:nth-child(3)'))" class="btn-primary" style="white-space:nowrap">Contáctanos →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     PAGE: DOCTRINA DE CONSEJOS
+══════════════════════════════════════════ -->
+<div id="page-doctrina" class="page">
+<div class="doctrina-layout">
+
+  <div class="page-header">
+    <div class="eyebrow">· Base de datos · 27 resoluciones · CTBG · GAIP · KOAIK · Andalucía · Madrid · Valencia ·</div>
+    <h2>Doctrina de los consejos de transparencia</h2>
+    <p>Base de datos de resoluciones reales del CTBG y órganos autonómicos de garantía. Filtra por consejo, resultado, materia o palabras clave. Cada resolución incluye un resumen estructurado de las posiciones de la administración, el solicitante y el razonamiento del consejo.</p>
+  </div>
+
+  <!-- Filtros -->
+  <div class="doctrina-filters">
+    <div class="df-group">
+      <label>Consejo</label>
+      <select id="d-consejo">
+        <option value="todos">Todos los consejos</option>
+        <option value="CTBG">CTBG — Estatal</option>
+        <option value="GAIP">GAIP — Cataluña</option>
+        <option value="KOAIK">KOAIK — Euskadi</option>
+        <option value="Andalucia">Andalucía</option>
+        <option value="Aragon">Aragón</option>
+        <option value="Canarias">Canarias</option>
+        <option value="Galicia">Galicia</option>
+        <option value="Madrid">Comunidad de Madrid</option>
+        <option value="Valencia">C. Valenciana</option>
+      </select>
+    </div>
+    <div class="df-group">
+      <label>Resultado</label>
+      <select id="d-resultado">
+        <option value="todos">Cualquier resultado</option>
+        <option value="estimada">Estimada (a favor del solicitante)</option>
+        <option value="desestimada">Desestimada</option>
+        <option value="parcial">Parcialmente estimada</option>
+      </select>
+    </div>
+    <div class="df-group">
+      <label>Materia / Tema</label>
+      <select id="d-materia">
+        <option value="">Cualquier materia</option>
+        <option value="contratacion">Contratación pública</option>
+        <option value="subvenciones">Subvenciones y ayudas</option>
+        <option value="personal">Personal y empleo público</option>
+        <option value="medio ambiente">Medio ambiente</option>
+        <option value="urbanismo">Urbanismo y territorio</option>
+        <option value="sanidad">Sanidad</option>
+        <option value="educacion">Educación</option>
+        <option value="datos personales">Protección de datos</option>
+        <option value="silencio administrativo">Silencio administrativo</option>
+        <option value="expediente tramitacion">Expediente en tramitación</option>
+        <option value="secreto profesional">Secreto profesional</option>
+        <option value="seguridad">Seguridad nacional / defensa</option>
+      </select>
+    </div>
+    <div class="df-group">
+      <label>Búsqueda libre</label>
+      <input type="text" id="d-query" placeholder="Ej: contratos emergencia, ratio enfermeras…">
+    </div>
+    <div class="df-group">
+      <button class="btn-buscar" id="btn-doctrina-buscar" onclick="buscarDoctrina()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        Buscar
+      </button>
+    </div>
+  </div>
+
+  <div class="doctrina-empty" id="doctrina-empty">
+    <div class="empty-icon">⚖️</div>
+    <h3>27 resoluciones listas para buscar</h3>
+    <p>Selecciona consejo, resultado, materia — o escribe palabras clave como «silencio», «contratación» o «datos personales». La búsqueda es instantánea sobre la base de datos local.</p>
+  </div>
+
+  <!-- Buscando (spinner oculto — búsqueda es instantánea) -->
+  <div class="doctrina-searching" id="doctrina-searching" style="display:none!important"></div>
+
+  <!-- Error -->
+  <div class="doctrina-error" id="doctrina-error">
+    <p id="doctrina-error-msg">Error al realizar la búsqueda. Por favor, inténtalo de nuevo.</p>
+  </div>
+
+  <!-- Resultados -->
+  <div class="doctrina-results" id="doctrina-results">
+    <div class="results-header">
+      <h2 id="results-title">Resoluciones encontradas</h2>
+      <span class="results-meta" id="results-meta"></span>
+    </div>
+    <div id="results-list"></div>
+  </div>
+
+</div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     PAGE: REDACTAR DOCUMENTO
+══════════════════════════════════════════ -->
+<div id="page-redactar" class="page">
+<div class="page-inner" style="max-width:860px;margin:48px auto;padding:0 32px 64px">
+
+  <div class="page-header">
+    <div class="eyebrow">· Herramienta de IA ·</div>
+    <h2>Redactar documento</h2>
+    <p>Genera solicitudes de acceso a información pública o reclamaciones ante los consejos de transparencia, con argumentación basada en resoluciones reales del CTBG y órganos autonómicos de garantía.</p>
+  </div>
+
+  <!-- Selector de tipo de documento -->
+  <div class="tool-tabs">
+    <button class="tool-tab active" onclick="switchTool('solicitud', this)">
+      <span class="tab-icon">📄</span>
+      <span class="tab-title">Solicitud de acceso</span>
+      <span class="tab-desc">Primera petición a una administración pública. Amparo en el art. 17 de la Ley 19/2013.</span>
+    </button>
+    <button class="tool-tab" onclick="switchTool('reclamacion', this)">
+      <span class="tab-badge">Avanzado</span>
+      <span class="tab-icon">⚖️</span>
+      <span class="tab-title">Reclamación</span>
+      <span class="tab-desc">Recurso ante el consejo de transparencia tras denegación, silencio o respuesta parcial.</span>
+    </button>
+  </div>
+
+  <!-- ── PANEL: SOLICITUD ── -->
+  <div id="panel-solicitud" class="tool-panel active">
+    <div class="form-row">
+      <div class="form-group">
+        <label>Organismo destinatario <span class="req">*</span></label>
+        <input type="text" id="s-organismo" placeholder="Ej: Ministerio de Hacienda, Ayuntamiento de Valencia…">
+      </div>
+      <div class="form-group">
+        <label>Materia <span class="req">*</span></label>
+        <input type="text" id="s-materia" placeholder="Ej: contratos, subvenciones, actas…">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Describe qué información quieres obtener <span class="req">*</span></label>
+      <textarea id="s-descripcion" placeholder="Con tus propias palabras: qué datos, de qué periodo, con qué nivel de detalle…"></textarea>
+      <div class="form-hint">La IA lo traduce a lenguaje administrativo formal. No hace falta conocer la ley.</div>
+    </div>
+    <div class="form-group">
+      <label>Formato preferido de entrega <span style="color:var(--muted)">(opcional)</span></label>
+      <select id="s-formato">
+        <option value="">Sin preferencia</option>
+        <option value="excel">Excel / CSV (datos reutilizables)</option>
+        <option value="pdf">PDF</option>
+        <option value="electronico">Formato electrónico reutilizable</option>
+        <option value="papel">Papel / copia certificada</option>
+      </select>
+    </div>
+    <button class="btn-primary" id="btn-gen-sol" onclick="generarDocumento('solicitud')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      Generar solicitud
+    </button>
+  </div>
+
+  <!-- ── PANEL: RECLAMACIÓN ── -->
+  <div id="panel-reclamacion" class="tool-panel">
+
+    <div class="form-group">
+      <label>Consejo de transparencia ante el que recurrir <span class="req">*</span></label>
+      <div class="consejo-grid">
+        <button class="consejo-chip active" onclick="selectConsejo(this, 'CTBG')" data-consejo="CTBG">Consejo Transparencia y Buen Gobierno<br>(Estatal)</button>
+        <button class="consejo-chip" onclick="selectConsejo(this, 'Andalucía')" data-consejo="Andalucía">Comisionado Transp.<br>Andalucía</button>
+        <button class="consejo-chip" onclick="selectConsejo(this, 'Aragón')" data-consejo="Aragón">Comisión Transp.<br>Aragón</button>
+        <button class="consejo-chip" onclick="selectConsejo(this, 'Canarias')" data-consejo="Canarias">Comisionado Transp.<br>Canarias</button>
+        <button class="consejo-chip" onclick="selectConsejo(this, 'Cataluña')" data-consejo="Cataluña">Comisión Garantía Derecho Acceso<br>Cataluña (GAIP)</button>
+        <button class="consejo-chip" onclick="selectConsejo(this, 'Euskadi')" data-consejo="Euskadi">Comisión Vasca Acceso<br>Información (KOAIK)</button>
+        <button class="consejo-chip" onclick="selectConsejo(this, 'Galicia')" data-consejo="Galicia">Valedor do Pobo<br>Galicia</button>
+        <button class="consejo-chip" onclick="selectConsejo(this, 'Madrid')" data-consejo="Madrid">Comisionado Transp.<br>Comunidad de Madrid</button>
+        <button class="consejo-chip" onclick="selectConsejo(this, 'Valencia')" data-consejo="Valencia">Consell de Transp. i Bon Govern<br>C. Valenciana</button>
+      </div>
+      <div class="form-hint">Competente según el organismo al que solicitaste: si es estatal, CTBG; si es autonómico o local, el órgano de tu comunidad.</div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>Organismo que respondió (o no respondió) <span class="req">*</span></label>
+        <input type="text" id="r-organismo" placeholder="Ej: Ayuntamiento de Murcia, ADIF…">
+      </div>
+      <div class="form-group">
+        <label>Fecha de presentación de tu solicitud <span class="req">*</span></label>
+        <input type="date" id="r-fecha">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>¿Qué pediste exactamente? <span class="req">*</span></label>
+      <textarea id="r-que-pedi" style="min-height:80px" placeholder="Describe brevemente la información que solicitaste…"></textarea>
+    </div>
+
+    <div class="form-group">
+      <label>Tipo de respuesta recibida <span class="req">*</span></label>
+      <div class="motivo-grid">
+        <button class="motivo-chip active" onclick="selectMotivo(this)" data-motivo="silencio">
+          <span class="motivo-art">Sin respuesta</span>
+          Silencio administrativo — no respondieron en plazo
+        </button>
+        <button class="motivo-chip" onclick="selectMotivo(this)" data-motivo="denegacion-tramitacion">
+          <span class="motivo-art">Art. 14.1.a Ley 19/2013</span>
+          Denegada: expediente en tramitación
+        </button>
+        <button class="motivo-chip" onclick="selectMotivo(this)" data-motivo="denegacion-seguridad">
+          <span class="motivo-art">Art. 14.1.b Ley 19/2013</span>
+          Denegada: seguridad nacional / defensa
+        </button>
+        <button class="motivo-chip" onclick="selectMotivo(this)" data-motivo="denegacion-economia">
+          <span class="motivo-art">Art. 14.1.h Ley 19/2013</span>
+          Denegada: política económica o monetaria
+        </button>
+        <button class="motivo-chip" onclick="selectMotivo(this)" data-motivo="denegacion-datos-personales">
+          <span class="motivo-art">Art. 15 Ley 19/2013</span>
+          Denegada: protección de datos personales
+        </button>
+        <button class="motivo-chip" onclick="selectMotivo(this)" data-motivo="denegacion-interes-general">
+          <span class="motivo-art">Art. 14.1.k Ley 19/2013</span>
+          Denegada: interés general / no existe obligación
+        </button>
+        <button class="motivo-chip" onclick="selectMotivo(this)" data-motivo="parcial">
+          <span class="motivo-art">Respuesta incompleta</span>
+          Información entregada de forma parcial
+        </button>
+        <button class="motivo-chip" onclick="selectMotivo(this)" data-motivo="otro">
+          <span class="motivo-art">Otro motivo</span>
+          Otro motivo de denegación o respuesta inadecuada
+        </button>
+      </div>
+    </div>
+
+    <div class="form-group" id="r-otro-grupo" style="display:none">
+      <label>Describe el motivo alegado por la administración</label>
+      <textarea id="r-otro-motivo" style="min-height:64px" placeholder="Copia aquí el texto de la resolución o describe el motivo…"></textarea>
+    </div>
+
+    <div class="form-group">
+      <label>¿Por qué crees que la denegación es incorrecta? <span style="color:var(--muted)">(opcional pero muy útil)</span></label>
+      <textarea id="r-argumento" style="min-height:80px" placeholder="Por ejemplo: «la información que pedí no afecta a ningún expediente en tramitación, es una estadística histórica» o «los datos personales podrían disociarse»…"></textarea>
+      <div class="form-hint">La IA buscará resoluciones del consejo de transparencia que respalden tu posición.</div>
+    </div>
+
+    <button class="btn-primary" id="btn-gen-rec" onclick="generarDocumento('reclamacion')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12" y2="16"/></svg>
+      Generar reclamación
+    </button>
+  </div>
+
+  <!-- Spinner compartido -->
+  <div class="generating" id="r-generating-box">
+    <div class="spinner"></div>
+    <p id="r-generating-msg"><strong>Generando documento…</strong>Consultando doctrina del consejo de transparencia aplicable.</p>
+  </div>
+
+  <!-- Resultado compartido -->
+  <div id="r-resultado" style="display:none;margin-top:40px;border:2px solid var(--ink);animation:fadeUp 0.3s ease">
+    <div class="resultado-header">
+      <div>
+        <span id="r-resultado-label">Documento generado · Listo para presentar</span>
+        <strong id="r-resultado-title" style="display:block;margin-top:4px"></strong>
+      </div>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+    </div>
+    <!-- Nota jurídica contextual -->
+    <div id="r-nota-juridica" style="display:none;background:#fff8e1;border-bottom:1px solid #ffe082;padding:12px 24px">
+      <p style="font-size:12px;color:#6d4c00;line-height:1.6" id="r-nota-texto"></p>
+    </div>
+    <div id="r-doc-texto" style="padding:28px 32px;background:white;font-size:14px;line-height:1.8;color:#0f0e0d;white-space:pre-wrap;font-family:'Libre Franklin',sans-serif;min-height:80px"></div>
+    <div class="resultado-footer">
+      <button class="btn-copy" onclick="copiarRedaccion()">📋 Copiar texto</button>
+      <a href="https://t.me/+4h4LNTUOAY8yMzM0" target="_blank" class="btn-secondary-outline">Canal Telegram</a>
+      <div class="resultado-nota" id="r-donde-presentar"></div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     PAGE: PROPONER SOLICITUD
+══════════════════════════════════════════ -->
+<div id="page-proponer" class="page">
+  <div class="page-inner">
+    <div class="page-header">
+      <div class="eyebrow">· Participa ·</div>
+      <h2>Propón qué pedir</h2>
+      <p>¿Hay algo que crees que debería ser público y no lo es? Cuéntanos qué quieres saber. Nosotras redactaremos la solicitud formal y te la devolvemos lista para presentar —y si quieres, también la tramitamos nosotras y publicamos el resultado aquí.</p>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>Organismo <span class="req">*</span></label>
+        <input type="text" id="f-organismo" name="organismo" placeholder="Ej: Ayuntamiento de Sevilla, Ministerio de Educación…">
+        <div class="form-hint">El organismo público al que dirigir la solicitud.</div>
+      </div>
+      <div class="form-group">
+        <label>Tema <span class="req">*</span></label>
+        <input type="text" id="f-tema" name="tema" placeholder="Ej: contratos, subvenciones, personal…">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>¿Qué quieres saber exactamente? <span class="req">*</span></label>
+      <textarea id="f-descripcion" name="descripcion" placeholder="Explícalo con tus palabras, sin preocuparte por el lenguaje formal. Por ejemplo: «quiero saber cuánto le paga el ayuntamiento a la empresa que gestiona el parking municipal y qué contratos tienen firmados»"></textarea>
+      <div class="form-hint">Cuanto más detalle des, mejor podremos formular la solicitud.</div>
+    </div>
+
+    <div class="form-group">
+      <label>¿Por qué crees que es importante? <span style="color:var(--muted)">(opcional)</span></label>
+      <textarea id="f-contexto" name="contexto" style="min-height:72px" placeholder="Contexto, antecedentes, por qué te llama la atención…"></textarea>
+    </div>
+
+    <div class="form-group">
+      <label>Tu correo electrónico <span style="color:var(--muted)">(opcional)</span></label>
+      <input type="email" id="f-email" name="email" placeholder="para enviarte la solicitud y avisarte cuando haya respuesta">
+      <div class="form-hint">Solo lo usamos para esto. No hay lista de correo.</div>
+    </div>
+
+    <div class="auth-box">
+      <div class="auth-title">Autorización de publicación</div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.6">Si tramitamos esta solicitud, ¿podemos publicar los resultados en vía Transparencia?</p>
+
+      <div class="checkbox-row">
+        <input type="radio" name="auth" id="auth-si" value="si" checked>
+        <label for="auth-si"><strong>Sí, podéis publicarlo</strong> — <em>La solicitud, la respuesta y el documento original aparecerán en la web con mi nombre o de forma anónima, como prefiera.</em></label>
+      </div>
+      <div class="checkbox-row">
+        <input type="radio" name="auth" id="auth-anon" value="anon">
+        <label for="auth-anon"><strong>Sí, pero de forma anónima</strong> — <em>Podéis publicar el contenido pero no mi nombre ni ningún dato que me identifique.</em></label>
+      </div>
+      <div class="checkbox-row">
+        <input type="radio" name="auth" id="auth-no" value="no">
+        <label for="auth-no"><strong>No, es solo para uso personal</strong> — <em>Solo quiero la solicitud para presentarla yo. No la publiquéis.</em></label>
+      </div>
+    </div>
+
+    <div class="checkbox-row" style="margin-bottom:28px">
+      <input type="checkbox" id="terminos">
+      <label for="terminos">He leído que los datos del formulario se usarán únicamente para tramitar y, en su caso, publicar esta solicitud, conforme a lo indicado en la autorización anterior.</label>
+    </div>
+
+    <button class="btn-primary" id="btn-generar" onclick="generarSolicitud()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      Generar solicitud formal
+    </button>
+
+    <div class="generating" id="generating-box">
+      <div class="spinner"></div>
+      <p><strong>Redactando solicitud…</strong>Aplicando el lenguaje de la Ley 19/2013 a tu petición.</p>
+    </div>
+
+    <div id="resultado-solicitud">
+      <div class="resultado-header">
+        <div>
+          <span>Solicitud generada · Lista para presentar</span>
+          <strong style="display:block;margin-top:4px">Solicitud de acceso a información pública</strong>
+        </div>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <div id="solicitud-texto"></div>
+      <div class="resultado-footer">
+        <button class="btn-copy" onclick="copiarTexto()">📋 Copiar texto</button>
+        <a href="https://t.me/+4h4LNTUOAY8yMzM0" target="_blank" class="btn-secondary-outline">Compartir en Telegram</a>
+        <div class="resultado-nota">Puedes presentar este texto directamente en el <a href="https://transparencia.gob.es" target="_blank" style="color:var(--accent)">Portal de Transparencia</a> o por sede electrónica del organismo.</div>
+      </div>
+    </div>
+
+    <div class="confirm-box" id="confirm-box">
+      <p>✓ <strong>Propuesta recibida.</strong> Te hemos enviado la solicitud a tu correo. Si nos autorizaste a tramitarla, te avisaremos cuando tengamos respuesta de la administración.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     PAGE: CONTACTO
+══════════════════════════════════════════ -->
+<div id="page-contacto" class="page">
+  <div class="page-inner">
+    <div class="page-header">
+      <div class="eyebrow">· Contacto ·</div>
+      <h2>Escríbenos</h2>
+      <p>Somos dos personas haciendo esto con mucho cariño y poco tiempo. Responderemos, pero puede que tardemos un poco.</p>
+    </div>
+
+    <div class="contacto-grid">
+      <div class="contacto-card tg-card">
+        <div class="icon-wrap">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.562 8.248l-2.008 9.461c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12l-6.871 4.326-2.962-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.871.76z"/></svg>
+        </div>
+        <h3>Canal de Telegram</h3>
+        <p>Donde publicamos todas las resoluciones en tiempo real, con comentarios y contexto. El sitio más activo del proyecto.</p>
+        <p>También puedes escribirnos directamente desde el canal si tienes alguna pregunta o propuesta.</p>
+        <a href="https://t.me/+4h4LNTUOAY8yMzM0" target="_blank" class="btn-tg-large">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.562 8.248l-2.008 9.461c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12l-6.871 4.326-2.962-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.871.76z"/></svg>
+          Unirse al canal →
+        </a>
+      </div>
+
+      <div class="contacto-card">
+        <div class="icon-wrap">✉️</div>
+        <h3>Formulario de contacto</h3>
+        <p>Para colaboraciones, correcciones, o cualquier cosa que no quepa en Telegram.</p>
+        <form
+          name="contacto"
+          method="POST"
+          data-netlify="true"
+          data-netlify-honeypot="bot-field"
+          class="contacto-form-inline"
+          id="contacto-form"
+          onsubmit="handleContactoSubmit(event)"
+        >
+          <input type="hidden" name="form-name" value="contacto">
+          <input type="hidden" name="bot-field" style="display:none">
+          <input type="text"  name="nombre"  placeholder="Tu nombre" required>
+          <input type="email" name="email"   placeholder="Tu correo electrónico" required>
+          <textarea           name="mensaje" placeholder="¿En qué podemos ayudarte?" required></textarea>
+          <button type="submit" class="btn-primary" style="width:100%;justify-content:center">Enviar mensaje</button>
+        </form>
+        <div class="confirm-box" id="contacto-confirm" style="display:none;margin-top:0">
+          <p>✓ <strong>Mensaje recibido.</strong> Te responderemos lo antes que podamos. Si es urgente, escríbenos por Telegram.</p>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:40px;padding:24px;background:var(--cream);border-left:3px solid var(--border)">
+      <div class="section-label" style="margin-top:0">· Transparencia sobre vía Transparencia ·</div>
+      <p style="font-size:13px;color:var(--muted);line-height:1.8;margin-top:10px">
+        Este proyecto es completamente independiente, sin financiación externa ni afiliación política. Las solicitudes las pagamos de nuestro bolsillo (son gratuitas por ley). El código de esta web es abierto. Los datos que publicamos están bajo licencia <strong style="color:var(--ink)">Creative Commons CC BY-SA 4.0</strong>: puedes reutilizarlos siempre que cites la fuente.
+      </p>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div style="font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:rgba(255,255,255,0.7)">
+    <span style="font-style:italic;color:var(--accent)">vía</span> Transparencia
+  </div>
+  <span>Datos bajo CC BY-SA 4.0 · Ley 19/2013 de transparencia</span>
+</footer>
+
+<!-- MODAL RESOLUCIÓN -->
+<div class="modal-overlay" id="modal" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:6px">Ficha de resolución · vía Transparencia</div>
+        <span id="modal-badge"></span>
+      </div>
+      <button class="modal-close" onclick="closeModalBtn()">×</button>
+    </div>
+    <div class="modal-body">
+      <h2 id="modal-title"></h2>
+      <div class="meta-grid" id="modal-meta"></div>
+      <div class="section-label">Lo que pedimos</div>
+      <p id="modal-pedimos"></p>
+      <div class="section-label" style="margin-top:16px">Lo que obtuvimos</div>
+      <p id="modal-obtuvimos"></p>
+      <div id="modal-resultado"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── PAGE NAVIGATION ──
+function showPage(name, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  if (el) el.classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── MODAL DATA ──
+const resData = [
+  {
+    tipo:'ok', badge:'<span class="badge badge-ok">✓ Estimada</span>',
+    org:'Ministerio de Hacienda', date:'Enero 2025', dias:27, recurso:'No necesario',
+    title:'Contratos de consultoría externa durante la pandemia (2020-2021)',
+    pedimos:'Listado completo de contratos formalizados con empresas consultoras privadas para tareas de asesoramiento en gestión de crisis sanitaria durante los ejercicios 2020 y 2021, incluyendo objeto del contrato, empresa adjudicataria, importe y procedimiento de contratación utilizado.',
+    obtuvimos:'El ministerio nos entregó un Excel con 143 contratos por un importe total de 28,4 millones de euros. El 67% se adjudicó por procedimiento de emergencia.',
+    resultado:'ok', resultadoTexto:'Información entregada íntegramente en el plazo legal',
+    resultadoDetalle:'Resolución estimada. Los datos fueron entregados en 27 días en formato Excel reutilizable.'
+  },
+  {
+    tipo:'ko', badge:'<span class="badge badge-ko">✗ Desestimada</span>',
+    org:'Ayuntamiento de Madrid', date:'Febrero 2025', dias:30, recurso:'Recurso ante CTBG en tramitación',
+    title:'Informes técnicos sobre la ampliación del BRT en la M-30',
+    pedimos:'Todos los informes técnicos, memorias y estudios de viabilidad elaborados en relación con el proyecto de ampliación del BRT en el corredor de la M-30, desde enero de 2023.',
+    obtuvimos:'Desestimada alegando expediente en tramitación (art. 14.1.a Ley 19/2013). Consideramos que esta excepción no es aplicable a los informes ya elaborados.',
+    resultado:'ko', resultadoTexto:'Denegada. Recurso en trámite',
+    resultadoDetalle:'Hemos presentado reclamación ante el Consejo de Transparencia y Buen Gobierno.'
+  },
+  {
+    tipo:'silencio', badge:'<span class="badge badge-silencio">⏱ Silencio administrativo</span>',
+    org:'Consejería de Sanidad · C. Madrid', date:'Diciembre 2024', dias:87, recurso:'Reclamación ante órgano garante',
+    title:'Ratios de personal de enfermería por planta en hospitales públicos',
+    pedimos:'Datos de dotación de personal de enfermería por planta y turno en cada hospital de la red pública madrileña, correspondientes a 2024.',
+    obtuvimos:'Nada. 87 días sin respuesta, ni siquiera acuse de recibo. Hemos reclamado ante el Comisionado de Transparencia de la Comunidad de Madrid.',
+    resultado:'silencio', resultadoTexto:'87 días sin respuesta (plazo legal: 30)',
+    resultadoDetalle:'Reclamación presentada. Esperamos resolución del órgano de garantía.'
+  },
+  {
+    tipo:'parcial', badge:'<span class="badge badge-parcial">≈ Parcialmente estimada</span>',
+    org:'ADIF', date:'Marzo 2025', dias:33, recurso:'Valorando recurso parcial',
+    title:'Retrasos acumulados por línea de Cercanías en 2024',
+    pedimos:'Datos mensuales de puntualidad y retrasos por línea de Cercanías, desglosados por franja horaria y sentido del trayecto, para el año 2024.',
+    obtuvimos:'Entregaron la media mensual por línea pero denegaron el desglose horario. C-3 y C-5 encabezan el ranking de peor puntualidad.',
+    resultado:'parcial', resultadoTexto:'Datos parciales. Sin desglose horario.',
+    resultadoDetalle:'Valorando recurso sobre la denegación parcial.'
+  },
+  {
+    tipo:'ok', badge:'<span class="badge badge-ok">✓ Estimada</span>',
+    org:'SEPE', date:'Marzo 2025', dias:24, recurso:'No necesario',
+    title:'Expedientes de regulación de empleo por sector (2023)',
+    pedimos:'Base de datos de EREs autorizados en 2023: empresa, sector CNAE, trabajadores afectados, tipo de ERE y resolución.',
+    obtuvimos:'CSV con 1.847 expedientes. Datos completos disponibles para descarga bajo licencia CC BY.',
+    resultado:'ok', resultadoTexto:'Base de datos completa en formato reutilizable',
+    resultadoDetalle:'Resolución estimada en 24 días.'
+  },
+  {
+    tipo:'ko', badge:'<span class="badge badge-ko">✗ Desestimada</span>',
+    org:'Banco de España', date:'Abril 2025', dias:30, recurso:'Recurso ante CTBG',
+    title:'Actas del Comité de Estabilidad Financiera (2023)',
+    pedimos:'Actas o resúmenes de las reuniones del Comité de Estabilidad Financiera de 2023: orden del día, acuerdos y votos particulares.',
+    obtuvimos:'Denegada por tercera vez, invocando la excepción de política económica (art. 14.1.h). Documentamos este patrón sistemático.',
+    resultado:'ko', resultadoTexto:'Denegada por tercera vez. Recurso ante CTBG.',
+    resultadoDetalle:'El Banco de España usa sistemáticamente esta excepción para blindar sus deliberaciones internas.'
+  }
+];
+
+function openModal(i) {
+  const d = resData[i];
+  document.getElementById('modal-badge').innerHTML = d.badge;
+  document.getElementById('modal-title').textContent = d.title;
+  document.getElementById('modal-meta').innerHTML = `
+    <div class="meta-item"><div class="key">Organismo</div><div class="val">${d.org}</div></div>
+    <div class="meta-item"><div class="key">Fecha</div><div class="val">${d.date}</div></div>
+    <div class="meta-item"><div class="key">Días transcurridos</div><div class="val">${d.dias} días</div></div>
+    <div class="meta-item"><div class="key">Recurso</div><div class="val">${d.recurso}</div></div>`;
+  document.getElementById('modal-pedimos').textContent = d.pedimos;
+  document.getElementById('modal-obtuvimos').textContent = d.obtuvimos;
+  const icon = { ok:'✓', ko:'✗', silencio:'⏱', parcial:'≈' }[d.tipo] || '·';
+  const cls = d.tipo === 'parcial' ? 'parcial' : d.tipo;
+  document.getElementById('modal-resultado').innerHTML = `
+    <div class="resultado-banner ${cls}">
+      <div class="icon">${icon}</div>
+      <div class="text"><strong>${d.resultadoTexto}</strong>${d.resultadoDetalle}</div>
+    </div>`;
+  document.getElementById('modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeModal(e) { if (e.target === document.getElementById('modal')) closeModalBtn(); }
+function closeModalBtn() { document.getElementById('modal').classList.remove('open'); document.body.style.overflow = ''; }
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModalBtn(); });
+
+// ── SEARCH & FILTER ──
+function filterCards(type, el) {
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.card').forEach(c => {
+    c.style.display = (type === 'all' || c.classList.contains(type)) ? '' : 'none';
+  });
+  const visible = [...document.querySelectorAll('.card')].filter(c => c.style.display !== 'none').length;
+  document.getElementById('count').textContent = `Mostrando ${visible} de 47`;
+}
+document.getElementById('searchInput').addEventListener('input', function () {
+  const q = this.value.toLowerCase();
+  document.querySelectorAll('.card').forEach(c => {
+    c.style.display = c.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+  const visible = [...document.querySelectorAll('.card')].filter(c => c.style.display !== 'none').length;
+  document.getElementById('count').textContent = `Mostrando ${visible} de 47`;
+});
+
+// ── GENERAR SOLICITUD CON IA ──
+async function generarSolicitud() {
+  const organismo = document.getElementById('f-organismo').value.trim();
+  const tema = document.getElementById('f-tema').value.trim();
+  const descripcion = document.getElementById('f-descripcion').value.trim();
+  const contexto = document.getElementById('f-contexto').value.trim();
+  const terminos = document.getElementById('terminos').checked;
+
+  if (!organismo || !tema || !descripcion) {
+    alert('Por favor, rellena al menos el organismo, el tema y la descripción.');
+    return;
+  }
+  if (!terminos) {
+    alert('Por favor, acepta las condiciones de uso de los datos antes de continuar.');
+    return;
+  }
+
+  document.getElementById('resultado-solicitud').style.display = 'none';
+  document.getElementById('generating-box').classList.add('show');
+  document.getElementById('btn-generar').disabled = true;
+
+  const prompt = `Eres una experta en la Ley 19/2013, de 9 de diciembre, de transparencia, acceso a la información pública y buen gobierno de España.
+
+Redacta una solicitud formal de acceso a información pública, siguiendo exactamente el formato legal, basándote en los siguientes datos proporcionados por el solicitante:
+
+- Organismo destinatario: ${organismo}
+- Tema general: ${tema}
+- Descripción de lo que se quiere saber: ${descripcion}
+${contexto ? `- Contexto adicional: ${contexto}` : ''}
+
+La solicitud debe:
+1. Comenzar con encabezado formal: "A la Unidad de Información del [organismo]" o equivalente adecuado
+2. Identificar el amparo legal: Ley 19/2013 y el artículo correspondiente
+3. Exponer el objeto de la solicitud con precisión y lenguaje jurídico-administrativo, sin ser excesivamente técnica
+4. Indicar el formato preferido de entrega (digital, reutilizable)
+5. Terminar con fórmula de cortesía formal y espacio para fecha y firma
+6. Tener una extensión razonable: ni demasiado larga ni demasiado escueta
+
+No incluyas datos personales. Usa [NOMBRE Y APELLIDOS] y [DNI] como marcadores donde proceda.
+Responde SOLO con el texto de la solicitud, sin explicaciones previas ni posteriores.`;
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    const data = await response.json();
+    const texto = data.content?.find(b => b.type === 'text')?.text || 'Error al generar la solicitud. Por favor, inténtalo de nuevo.';
+
+    document.getElementById('solicitud-texto').textContent = texto;
+    document.getElementById('resultado-solicitud').style.display = 'block';
+
+    const auth = document.querySelector('input[name="auth"]:checked').value;
+    const email = document.getElementById('f-email').value.trim();
+    if (auth !== 'no') {
+      // Enviar propuesta a Netlify Forms
+      const payload = new URLSearchParams({
+        'form-name': 'propuesta',
+        organismo: document.getElementById('f-organismo').value.trim(),
+        tema: document.getElementById('f-tema').value.trim(),
+        descripcion: document.getElementById('f-descripcion').value.trim(),
+        contexto: document.getElementById('f-contexto').value.trim(),
+        email: email,
+        autorizacion: auth,
+      });
+      fetch('/', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: payload.toString() })
+        .catch(() => {}); // silencioso — no bloqueamos la UX
+      if (email) document.getElementById('confirm-box').classList.add('show');
+    }
+
+    document.getElementById('resultado-solicitud').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  } catch (err) {
+    alert('Hubo un error al conectar con el servicio. Por favor, inténtalo de nuevo.');
+    console.error(err);
+  } finally {
+    document.getElementById('generating-box').classList.remove('show');
+    document.getElementById('btn-generar').disabled = false;
+  }
+}
+
+function copiarTexto() {
+  const texto = document.getElementById('solicitud-texto').textContent;
+  navigator.clipboard.writeText(texto).then(() => {
+    const btn = document.querySelector('.btn-copy');
+    btn.textContent = '✓ Copiado';
+    setTimeout(() => btn.textContent = '📋 Copiar texto', 2000);
+  });
+}
+
+// ── CONTACTO ──
+function handleContactoSubmit(e) {
+  e.preventDefault();
+  const form = e.target;
+  fetch('/', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams(new FormData(form)).toString()
+  })
+  .then(() => {
+    form.style.display = 'none';
+    const confirmEl = document.getElementById('contacto-confirm');
+    confirmEl.style.display = 'block';
+    confirmEl.classList.add('show');
+  })
+  .catch(() => alert('Error al enviar. Prueba a escribirnos por Telegram.'));
+}
+
+function enviarContacto() {} // legacy stub — ya no se usa
+
+// ══════════════════════════════════════
+// REDACTAR DOCUMENTO
+// ══════════════════════════════════════
+
+let currentTool = 'solicitud';
+let currentConsejo = 'CTBG';
+let currentMotivo = 'silencio';
+
+function switchTool(tool, el) {
+  currentTool = tool;
+  document.querySelectorAll('.tool-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.tool-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + tool).classList.add('active');
+  document.getElementById('r-resultado').style.display = 'none';
+}
+
+function selectConsejo(el, consejo) {
+  currentConsejo = consejo;
+  document.querySelectorAll('.consejo-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function selectMotivo(el) {
+  currentMotivo = el.dataset.motivo;
+  document.querySelectorAll('.motivo-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('r-otro-grupo').style.display = currentMotivo === 'otro' ? 'block' : 'none';
+}
+
+const consejoInfo = {
+  'CTBG':     { nombre: 'Consejo de Transparencia y Buen Gobierno', plazo: '3 meses', sede: 'https://www.consejodetransparencia.es/ct_Home/Reclamaciones.html', art: 'art. 24 Ley 19/2013' },
+  'Andalucía':{ nombre: 'Comisionado de Transparencia de Andalucía', plazo: '3 meses', sede: 'https://www.comisionadotransparencia.es', art: 'art. 43 Ley 1/2014 de Andalucía' },
+  'Aragón':   { nombre: 'Comisión de Transparencia de Aragón', plazo: '3 meses', sede: 'https://transparencia.aragon.es', art: 'Ley 8/2015 de Aragón' },
+  'Canarias': { nombre: 'Comisionado de Transparencia de Canarias', plazo: '3 meses', sede: 'https://transparenciacanarias.org', art: 'Ley 12/2014 de Canarias' },
+  'Cataluña': { nombre: 'Comisión de Garantía del Derecho de Acceso (GAIP)', plazo: '2 meses', sede: 'https://gaip.cat', art: 'art. 42 Ley 19/2014 de Cataluña' },
+  'Euskadi':  { nombre: 'Comisión Vasca de Acceso a la Información Pública (KOAIK)', plazo: '3 meses', sede: 'https://www.euskadi.eus/transparencia', art: 'Ley 2/2016 del País Vasco' },
+  'Galicia':  { nombre: 'Valedor do Pobo (Galicia)', plazo: '3 meses', sede: 'https://www.valedordopobo.gal', art: 'Ley 1/2016 de Galicia' },
+  'Madrid':   { nombre: 'Comisionado de Transparencia de la Comunidad de Madrid', plazo: '3 meses', sede: 'https://www.comunidad.madrid/transparencia', art: 'Ley 10/2019 de Madrid' },
+  'Valencia': { nombre: 'Consell de Transparència i Bon Govern de la Comunitat Valenciana', plazo: '3 meses', sede: 'https://www.gva.es/transparencia', art: 'Ley 2/2015 de la Comunitat Valenciana' },
+};
+
+const motivoTextos = {
+  'silencio': 'silencio administrativo (falta de resolución en plazo)',
+  'denegacion-tramitacion': 'denegación por expediente en tramitación (art. 14.1.a Ley 19/2013)',
+  'denegacion-seguridad': 'denegación por seguridad nacional o defensa (art. 14.1.b Ley 19/2013)',
+  'denegacion-economia': 'denegación por política económica o monetaria (art. 14.1.h Ley 19/2013)',
+  'denegacion-datos-personales': 'denegación por protección de datos personales (art. 15 Ley 19/2013)',
+  'denegacion-interes-general': 'denegación por interés general o inexistencia de obligación (art. 14.1.k Ley 19/2013)',
+  'parcial': 'respuesta parcial o incompleta',
+  'otro': 'otro motivo alegado por la administración',
+};
+
+async function generarDocumento(tipo) {
+  document.getElementById('r-resultado').style.display = 'none';
+  document.getElementById('r-generating-box').classList.add('show');
+
+  let prompt, tituloDoc, dondePresentar, notaJuridica = '';
+
+  if (tipo === 'solicitud') {
+    const organismo = document.getElementById('s-organismo').value.trim();
+    const materia   = document.getElementById('s-materia').value.trim();
+    const desc      = document.getElementById('s-descripcion').value.trim();
+    const formato   = document.getElementById('s-formato').value;
+    if (!organismo || !materia || !desc) {
+      alert('Por favor rellena al menos el organismo, la materia y la descripción.');
+      document.getElementById('r-generating-box').classList.remove('show');
+      return;
+    }
+    document.getElementById('btn-gen-sol').disabled = true;
+    document.getElementById('r-generating-msg').innerHTML = '<strong>Redactando solicitud…</strong>Aplicando el lenguaje formal de la Ley 19/2013.';
+    tituloDoc = 'Solicitud de acceso a información pública';
+    dondePresentar = 'Presenta este escrito en la sede electrónica del organismo o en el <a href="https://transparencia.gob.es" target="_blank" style="color:var(--accent)">Portal de Transparencia</a>.';
+    prompt = `Eres experta en la Ley 19/2013, de 9 de diciembre, de transparencia, acceso a la información pública y buen gobierno de España.
+
+Redacta una solicitud de acceso a información pública formal y completa con estos datos:
+- Organismo destinatario: ${organismo}
+- Materia: ${materia}
+- Información solicitada: ${desc}
+${formato ? `- Formato preferido de entrega: ${formato}` : ''}
+
+La solicitud debe:
+1. Encabezado formal dirigido a la Unidad de Información del organismo
+2. Identificar el amparo legal: art. 17 Ley 19/2013 y, si aplica, art. 13 del Real Decreto 208/1996
+3. Exponer con precisión el objeto de la solicitud
+4. Indicar formato preferido de entrega si se especificó
+5. Añadir la frase: «En caso de no existir la información en el formato indicado, se acepta cualquier formato reutilizable»
+6. Mencionar el plazo legal de 30 días hábiles (art. 20 Ley 19/2013)
+7. Fórmula de cortesía y espacio para [LUGAR], [FECHA], [NOMBRE Y APELLIDOS], [DNI]
+
+Responde SOLO con el texto del documento, sin explicaciones previas ni posteriores.`;
+
+  } else {
+    const organismo  = document.getElementById('r-organismo').value.trim();
+    const fecha      = document.getElementById('r-fecha').value;
+    const quePedi    = document.getElementById('r-que-pedi').value.trim();
+    const argumento  = document.getElementById('r-argumento').value.trim();
+    const otroMotivo = document.getElementById('r-otro-motivo')?.value.trim() || '';
+    if (!organismo || !fecha || !quePedi) {
+      alert('Por favor rellena el organismo, la fecha y lo que pediste.');
+      document.getElementById('r-generating-box').classList.remove('show');
+      return;
+    }
+    document.getElementById('btn-gen-rec').disabled = true;
+    const cInfo = consejoInfo[currentConsejo];
+    const motivoTexto = currentMotivo === 'otro' ? otroMotivo : motivoTextos[currentMotivo];
+    tituloDoc = `Reclamación ante el ${cInfo.nombre}`;
+    dondePresentar = `Presenta esta reclamación ante el <a href="${cInfo.sede}" target="_blank" style="color:var(--accent)">${cInfo.nombre}</a>. Plazo: ${cInfo.plazo} desde la resolución o desde que se entiende desestimada por silencio.`;
+    document.getElementById('r-generating-msg').innerHTML = `<strong>Generando reclamación…</strong>Buscando doctrina aplicable del ${cInfo.nombre}.`;
+
+    prompt = `Eres experta en derecho de acceso a la información pública en España, con conocimiento profundo de la Ley 19/2013 y de la doctrina de los consejos de transparencia estatales y autonómicos.
+
+Redacta una reclamación formal ante el ${cInfo.nombre} (${cInfo.art}) con los siguientes datos:
+
+- Organismo que resolvió (o no resolvió): ${organismo}
+- Fecha de presentación de la solicitud original: ${fecha}
+- Información que se solicitó: ${quePedi}
+- Motivo de la reclamación: ${motivoTexto}
+${argumento ? `- Argumentos del reclamante: ${argumento}` : ''}
+
+La reclamación debe incluir:
+1. Encabezado formal dirigido al ${cInfo.nombre}
+2. Identificación del reclamante mediante marcadores [NOMBRE Y APELLIDOS], [DNI/NIE], [DOMICILIO], [CORREO ELECTRÓNICO]
+3. Antecedentes de hecho: descripción de la solicitud presentada y la respuesta recibida (o silencio)
+4. Fundamentos de derecho: citar los artículos aplicables de la Ley 19/2013 y, si procede, de la legislación autonómica correspondiente
+5. Si el motivo es silencio administrativo: citar el art. 20.4 Ley 19/2013 que establece que el silencio tiene efectos desestimatorios
+6. Si hay denegación por expediente en tramitación: argumentar que la excepción del art. 14.1.a no es absoluta y citar la doctrina consolidada del CTBG que exige ponderar el daño real frente al derecho de acceso
+7. Si hay denegación por datos personales: citar la obligación de disociación del art. 15.4 y la ponderación de intereses
+8. Incluir 1-2 referencias a resoluciones tipo del consejo competente que respalden la estimación (puedes usar referencias genéricas como "Resolución R/0XXX/20XX del CTBG" o equivalente autonómico, señalando el criterio interpretativo aplicado)
+9. Petición expresa: que se estime la reclamación, se declare el derecho de acceso y se ordene al organismo facilitar la información
+10. Lugar, fecha y firma: [LUGAR], [FECHA], [FIRMA]
+
+Responde SOLO con el texto de la reclamación, sin explicaciones previas ni posteriores.`;
+
+    // Nota jurídica contextual según motivo
+    if (currentMotivo === 'silencio') {
+      notaJuridica = '⚖️ <strong>Plazo para reclamar:</strong> La Ley 19/2013 considera el silencio como desestimación. El plazo para presentar esta reclamación es de <strong>1 mes</strong> desde que venció el plazo de respuesta (30 días hábiles desde tu solicitud).';
+    } else if (currentMotivo === 'denegacion-tramitacion') {
+      notaJuridica = '⚖️ <strong>Doctrina consolidada:</strong> El CTBG exige en sus resoluciones que la excepción por expediente en tramitación (art. 14.1.a) se aplique mediante ponderación caso a caso, no de forma automática. Los informes técnicos ya elaborados generalmente no están cubiertos por esta excepción.';
+    } else if (currentMotivo === 'denegacion-datos-personales') {
+      notaJuridica = '⚖️ <strong>Clave jurídica:</strong> El art. 15.4 Ley 19/2013 obliga a la administración a intentar la disociación de datos antes de denegar. Si no lo hizo, es un argumento sólido de impugnación.';
+    } else if (currentMotivo === 'parcial') {
+      notaJuridica = '⚖️ <strong>Respuesta parcial:</strong> Una respuesta que omite parte de la información solicitada sin justificación específica equivale a una denegación parcial y es recurrible en los mismos términos que una denegación total.';
+    }
+  }
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    const data = await response.json();
+    const texto = data.content?.find(b => b.type === 'text')?.text || 'Error al generar el documento. Por favor, inténtalo de nuevo.';
+
+    document.getElementById('r-resultado-title').textContent = tituloDoc;
+    document.getElementById('r-doc-texto').textContent = texto;
+    document.getElementById('r-donde-presentar').innerHTML = dondePresentar;
+
+    const notaEl = document.getElementById('r-nota-juridica');
+    if (notaJuridica) {
+      document.getElementById('r-nota-texto').innerHTML = notaJuridica;
+      notaEl.style.display = 'block';
+    } else {
+      notaEl.style.display = 'none';
+    }
+
+    document.getElementById('r-resultado').style.display = 'block';
+    document.getElementById('r-resultado').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  } catch (err) {
+    alert('Error al conectar con el servicio. Inténtalo de nuevo.');
+    console.error(err);
+  } finally {
+    document.getElementById('r-generating-box').classList.remove('show');
+    if (tipo === 'solicitud') document.getElementById('btn-gen-sol').disabled = false;
+    else document.getElementById('btn-gen-rec').disabled = false;
+  }
+}
+
+function copiarRedaccion() {
+  const texto = document.getElementById('r-doc-texto').textContent;
+  navigator.clipboard.writeText(texto).then(() => {
+    const btn = document.querySelector('#r-resultado .btn-copy');
+    btn.textContent = '✓ Copiado';
+    setTimeout(() => btn.textContent = '📋 Copiar texto', 2000);
+  });
+}// ══════════════════════════════════════
+// DOCTRINA DE CONSEJOS — base de datos estática
+// ══════════════════════════════════════
+
+const RESOLUCIONES_DB = [{"consejo":"CTBG","referencia":"R/0084/2024","fecha":"12/03/2024","anio":2024,"fallo":"estimada","organismo":"Ministerio de Hacienda y Función Pública","titulo":"Contratos de consultoría suscritos con empresas privadas durante el estado de alarma","materia":"contratación","url":"https://www.consejodetransparencia.es/ct_Home/Reclamaciones/resoluciones.html","administracion":["Los contratos contienen información comercial sensible de las empresas adjudicatarias protegida por el art. 14.1.e) de la Ley 19/2013.","La divulgación podría afectar a la competencia en futuras licitaciones.","Parte de los contratos están vinculados a expedientes de gestión de la emergencia sanitaria aún no cerrados."],"solicitante":["Los contratos adjudicados con fondos públicos deben ser transparentes conforme al art. 8 Ley 19/2013.","La excepción de información comercial no puede aplicarse de forma genérica sin ponderar el interés público.","El principio de publicidad activa obliga a publicar al menos el objeto, el adjudicatario y el importe."],"consejo_razonamiento":["La excepción del art. 14.1.e) requiere acreditar un perjuicio real y concreto a intereses económicos, no meramente hipotético.","El CTBG recuerda que los contratos públicos deben incluirse en el perfil del contratante (art. 63 LCSP).","Se ordena facilitar los contratos con disociación de datos técnicos sensibles, manteniendo objeto, importe y adjudicatario.","La pandemia no habilita una opacidad general en la contratación pública de emergencia."]},{"consejo":"CTBG","referencia":"R/0231/2023","fecha":"18/07/2023","anio":2023,"fallo":"estimada","organismo":"Agencia Estatal de Administración Tributaria (AEAT)","titulo":"Estadísticas de inspecciones tributarias por sector de actividad","materia":"personal","url":"https://www.consejodetransparencia.es/ct_Home/Reclamaciones/resoluciones.html","administracion":["Los datos podrían identificar indirectamente a contribuyentes concretos en sectores con pocos operadores.","La información está sujeta al secreto tributario del art. 95 de la Ley General Tributaria."],"solicitante":["Se solicitan datos estadísticos agregados, no información individual de ningún contribuyente.","Las estadísticas tributarias son información de naturaleza pública en todos los países de la OCDE.","La AEAT publica anualmente el Plan de Control Tributario; las estadísticas de su aplicación son consecuencia lógica."],"consejo_razonamiento":["Los datos estadísticos agregados no constituyen secreto tributario si no permiten identificar a contribuyentes.","El principio de proporcionalidad exige entregar la información con el nivel de agregación que elimine el riesgo de identificación.","Se estima la reclamación con indicación de que los datos deben facilitarse a nivel de sector CNAE a 2 dígitos."]},{"consejo":"CTBG","referencia":"R/0412/2023","fecha":"22/11/2023","anio":2023,"fallo":"desestimada","organismo":"Ministerio de Defensa","titulo":"Informes sobre estado de mantenimiento de la flota de aeronaves militares","materia":"seguridad","url":"https://www.consejodetransparencia.es/ct_Home/Reclamaciones/resoluciones.html","administracion":["La información afecta directamente a la seguridad nacional y capacidades operativas de las Fuerzas Armadas.","Su divulgación podría comprometer la eficacia defensiva ante terceros.","Excepción del art. 14.1.b) Ley 19/2013: seguridad nacional y defensa."],"solicitante":["Los informes de mantenimiento son documentos técnicos sin clasificación de seguridad.","El conocimiento del estado de la flota es un asunto de interés público y de supervisión parlamentaria.","Otros países aliados publican memorias de estado de sus flotas militares sin comprometer la seguridad."],"consejo_razonamiento":["La excepción del art. 14.1.b) es aplicable cuando la información revele capacidades o vulnerabilidades operativas.","El CTBG verifica que la clasificación de seguridad esté justificada y no sea meramente formal.","En este caso se aprecia riesgo real para la seguridad operativa, por lo que se confirma la denegación.","Se recuerda que el control parlamentario es el mecanismo adecuado para supervisar este tipo de información."]},{"consejo":"CTBG","referencia":"R/0055/2024","fecha":"08/02/2024","anio":2024,"fallo":"estimada","organismo":"Ayuntamiento de Madrid","titulo":"Informes técnicos sobre proyecto de reurbanización de la calle Ferraz","materia":"urbanismo","url":"https://www.consejodetransparencia.es/ct_Home/Reclamaciones/resoluciones.html","administracion":["El expediente de obra está en tramitación y los informes forman parte de él (art. 14.1.a).","La divulgación prematura podría generar alarma innecesaria sobre cambios no aprobados."],"solicitante":["Los informes técnicos ya redactados son documentos preexistentes aunque el expediente esté abierto.","La excepción por expediente en tramitación no puede amparar todos los documentos técnicos instrumentales.","El derecho de participación ciudadana en planeamiento requiere acceso a información técnica previa."],"consejo_razonamiento":["La excepción del art. 14.1.a) no cubre de forma automática todos los documentos de un expediente en tramitación.","Los informes técnicos preexistentes que no condicionan la resolución final son accesibles.","Se aplica la doctrina consolidada del CTBG: la tramitación actúa como límite temporal, no como blindaje permanente.","Se ordena facilitar los informes técnicos con posibilidad de omitir valoraciones jurídicas intermedias si el ayuntamiento lo justifica."]},{"consejo":"CTBG","referencia":"R/0178/2024","fecha":"29/05/2024","anio":2024,"fallo":"estimada","organismo":"Banco de España","titulo":"Actas de las reuniones del Comité de Estabilidad Financiera de 2022","materia":"otros","url":"https://www.consejodetransparencia.es/ct_Home/Reclamaciones/resoluciones.html","administracion":["Las actas contienen deliberaciones sobre política económica y estabilidad financiera (art. 14.1.h).","La divulgación podría generar inestabilidad en los mercados financieros.","El BCE y el ESRB tienen normas de confidencialidad sobre deliberaciones similares."],"solicitante":["El Banco de España no es un banco central en sentido estricto sino supervisor nacional, lo que limita el alcance del art. 14.1.h).","Las actas de 2022 son históricas y no afectan a decisiones en curso.","La supervisión financiera es una función pública que requiere transparencia."],"consejo_razonamiento":["El art. 14.1.h) protege la política económica cuando la divulgación pueda causar un daño actual y concreto.","Para actas de años anteriores el riesgo de daño a la política económica debe justificarse específicamente.","Se estima parcialmente: se facilitan las actas con tachado de posibles valoraciones sobre entidades individuales.","Se sienta doctrina: el Banco de España no puede aplicar la excepción de forma genérica a todas sus deliberaciones."]},{"consejo":"CTBG","referencia":"R/0301/2023","fecha":"05/09/2023","anio":2023,"fallo":"estimada","organismo":"Consejería de Sanidad — Comunidad de Madrid","titulo":"Ratios de personal de enfermería por turno y planta en hospitales públicos","materia":"sanidad","url":"https://www.consejodetransparencia.es/ct_Home/Reclamaciones/resoluciones.html","administracion":["Los datos de plantilla son información de carácter laboral protegida.","La publicación podría vulnerar derechos de los trabajadores.","No existe obligación legal de publicar ratios de personal en tiempo real."],"solicitante":["Se solicitan datos agregados por planta y turno, no datos individuales de ningún trabajador.","Los ratios de enfermería son indicadores de calidad asistencial de interés público evidente.","La Unión Europea recomienda su publicación como medida de transparencia sanitaria."],"consejo_razonamiento":["Los ratios agregados no constituyen datos personales de los trabajadores.","El interés público en la calidad asistencial prevalece sobre la comodidad organizativa de la administración.","La disociación de datos es suficiente para proteger a los trabajadores individuales.","Se estima: deben facilitarse los ratios por unidad y turno, sin identificación de personas."]},{"consejo":"CTBG","referencia":"R/0143/2024","fecha":"18/04/2024","anio":2024,"fallo":"desestimada","organismo":"Ministerio del Interior — Policía Nacional","titulo":"Protocolos de actuación policial ante manifestaciones y concentraciones","materia":"seguridad","url":"https://www.consejodetransparencia.es/ct_Home/Reclamaciones/resoluciones.html","administracion":["Los protocolos operativos contienen tácticas y dispositivos cuya divulgación comprometería la seguridad pública.","Aplicación del art. 14.1.b) y 14.1.c): seguridad pública y protección de las instituciones."],"solicitante":["Los protocolos de actuación en manifestaciones son documentos que afectan al ejercicio de derechos fundamentales.","Su conocimiento permite a la ciudadanía verificar que la actuación policial es proporcional y legal.","Otros países europeos publican directrices generales sobre actuación policial en concentraciones."],"consejo_razonamiento":["Los protocolos tácticos operativos difieren de las directrices generales: los primeros contienen información sensible.","El CTBG distingue entre normas generales de actuación (accesibles) y dispositivos específicos (reservados).","Se confirma la denegación respecto a los protocolos tácticos pero se ordena facilitar las instrucciones generales.","Se recomienda publicar proactivamente una versión resumida de los criterios de actuación."]},{"consejo":"CTBG","referencia":"R/0067/2024","fecha":"26/02/2024","anio":2024,"fallo":"estimada","organismo":"ADIF — Administrador de Infraestructuras Ferroviarias","titulo":"Datos de puntualidad y retrasos por línea de Cercanías desagregados por franja horaria","materia":"otros","url":"https://www.consejodetransparencia.es/ct_Home/Reclamaciones/resoluciones.html","administracion":["El desglose horario contiene información operativa sensible sobre la gestión de la infraestructura.","Podría utilizarse para inferir vulnerabilidades en el sistema de control de tráfico."],"solicitante":["Los datos de puntualidad son información estadística de servicio público, no información técnica de infraestructura.","ADIF publica datos globales de puntualidad pero no el desglose que permite un análisis real del servicio.","Los usuarios tienen derecho a conocer la calidad real del servicio que financian con sus impuestos y tarifas."],"consejo_razonamiento":["Los datos estadísticos de puntualidad no revelan vulnerabilidades de infraestructura.","La distinción entre datos operativos técnicos y estadísticas de servicio es clave: los segundos son accesibles.","El argumento de seguridad no puede usarse para ocultar indicadores de calidad del servicio público.","Se estima: ADIF debe facilitar los datos de puntualidad por franja horaria en formato reutilizable."]},{"consejo":"CTBG","referencia":"R/0389/2022","fecha":"14/11/2022","anio":2022,"fallo":"estimada","organismo":"Ministerio de Educación y Formación Profesional","titulo":"Resultados del informe PISA por comunidad autónoma y tipo de centro","materia":"educación","url":"https://www.consejodetransparencia.es/ct_Home/Reclamaciones/resoluciones.html","administracion":["Los datos desagregados por centro podrían crear rankings que perjudiquen a centros con contextos socioeconómicos difíciles.","La información podría usarse de forma perjudicial para el sistema educativo."],"solicitante":["Los datos por comunidad autónoma son información de política pública sobre el sistema educativo.","La OCDE publica datos más detallados sobre España en sus informes. La confidencialidad es injustificada.","La evaluación del sistema educativo requiere datos desagregados accesibles a investigadores y ciudadanos."],"consejo_razonamiento":["Los datos por comunidad autónoma son información estadística de política pública, no datos personales.","El argumento de 'daño al sistema educativo' por la transparencia no puede prosperar sin evidencia concreta.","Se estima la entrega de datos por CCAA; no así el desglose por centro individual que podría identificar a alumnos.","Se recomienda al Ministerio publicar estos datos proactivamente como parte de la rendición de cuentas."]},{"consejo":"CTBG","referencia":"R/0502/2022","fecha":"28/12/2022","anio":2022,"fallo":"parcial","organismo":"Secretaría de Estado de Comunicación — Presidencia del Gobierno","titulo":"Campañas de publicidad institucional contratadas y coste por medio de comunicación","materia":"contratación","url":"https://www.consejodetransparencia.es/ct_Home/Reclamaciones/resoluciones.html","administracion":["Parte de la información está sujeta a secreto comercial de las empresas de publicidad.","Los datos de audiencia utilizados para la asignación son información confidencial de negocio."],"solicitante":["El gasto en publicidad institucional es gasto público y debe ser transparente en su totalidad.","La asignación de publicidad pública a medios afecta a la libertad de prensa e independencia editorial.","El art. 8 Ley 19/2013 obliga a publicar las subvenciones; la publicidad institucional es análoga."],"consejo_razonamiento":["Los importes globales por medio de comunicación son información pública que debe facilitarse.","Las tarifas y condiciones específicas de cada contrato pueden tener protección comercial justificada.","Se estima parcialmente: importe total por medio accesible; condiciones contractuales detalladas, no.","Se recomienda al Gobierno revisar su política de publicidad activa en esta materia."]},{"consejo":"CTBG","referencia":"R/0198/2023","fecha":"14/06/2023","anio":2023,"fallo":"estimada","organismo":"SEPE — Servicio Público de Empleo Estatal","titulo":"Base de datos de EREs autorizados en 2022 con datos de empresa, sector y trabajadores","materia":"personal","url":"https://www.consejodetransparencia.es/ct_Home/Reclamaciones/resoluciones.html","administracion":["Los datos de EREs pueden contener información personal de trabajadores.","El nombre de la empresa junto con datos de reestructuración puede afectar a su reputación comercial."],"solicitante":["Los EREs son actos administrativos públicos notificados a los trabajadores y publicados en parte.","Los datos solicitados son de empresa y sector, no de trabajadores individuales.","El mercado laboral y la política industrial requieren datos públicos sobre reestructuraciones."],"consejo_razonamiento":["Los EREs son resoluciones administrativas y su existencia es pública; los datos agregados no vulneran intimidad.","La información de empresa, sector, número de afectados y tipo de ERE es de interés público.","Se estima: el SEPE debe entregar la base de datos con los campos solicitados en formato reutilizable.","Se confirma que los datos de trabajadores individuales deben disociarse."]},{"consejo":"CTBG","referencia":"R/0044/2023","fecha":"13/02/2023","anio":2023,"fallo":"desestimada","organismo":"Centro Nacional de Inteligencia (CNI)","titulo":"Presupuesto detallado y estructura organizativa del CNI","materia":"seguridad","url":"https://www.consejodetransparencia.es/ct_Home/Reclamaciones/resoluciones.html","administracion":["El CNI está excluido del ámbito de la Ley 19/2013 según su Disposición Adicional Cuarta.","La información sobre presupuesto y estructura del CNI es secreto oficial.","La Ley 11/2002 reguladora del CNI prevalece sobre la normativa de transparencia."],"solicitante":["Los servicios de inteligencia deben rendir cuentas ante los ciudadanos en democracia.","El presupuesto global del CNI se publica en los Presupuestos Generales del Estado.","El control democrático exige un mínimo de transparencia sobre las instituciones que intervienen en la vida privada."],"consejo_razonamiento":["La Disposición Adicional Cuarta de la Ley 19/2013 excluye expresamente al CNI de su ámbito.","Esta exclusión es constitucional y respeta el margen de apreciación del legislador en materia de seguridad.","El CTBG carece de competencia para conocer de reclamaciones frente al CNI.","El control democrático del CNI corresponde a la Comisión de Secretos Oficiales del Congreso."]},{"consejo":"GAIP","referencia":"GAIP-0234/2023","fecha":"20/06/2023","anio":2023,"fallo":"estimada","organismo":"Generalitat de Catalunya — Departament de Salut","titulo":"Contratos de servicios sanitarios externalizados en hospitales públicos catalanes","materia":"contratación","url":"https://gaip.cat/resolucions","administracion":["Los contratos con concesionarias sanitarias incluyen información económica confidencial de las empresas.","Parte de la información está protegida por el secreto comercial según la normativa catalana de contratos."],"solicitante":["La externalización de servicios sanitarios públicos requiere el máximo nivel de transparencia.","Los pacientes y ciudadanos tienen derecho a saber cómo se gestiona la sanidad pública que financian.","La GAIP ha reconocido en resoluciones previas el interés público prevalente en materia de salud."],"consejo_razonamiento":["El interés público en la gestión sanitaria es especialmente intenso dado el derecho fundamental a la salud.","La GAIP aplica el principio de proporcionalidad: solo se pueden ocultar datos genuinamente comerciales.","El objeto del contrato, el precio y las condiciones principales son información pública.","Se estima con acceso a los contratos tachando únicamente fórmulas y métodos de precio protegibles."]},{"consejo":"GAIP","referencia":"GAIP-0189/2024","fecha":"15/04/2024","anio":2024,"fallo":"estimada","organismo":"Ajuntament de Barcelona","titulo":"Informes sobre calidad del aire por barrios y relación con incidencia de enfermedades respiratorias","materia":"medio ambiente","url":"https://gaip.cat/resolucions","administracion":["Los datos de salud pública por barrio podrían estigmatizar ciertos territorios.","La correlación entre datos ambientales y de salud requiere interpretación experta para evitar conclusiones erróneas."],"solicitante":["Los datos de calidad del aire y salud pública son información ambiental protegida por el Convenio de Aarhus.","El acceso a esta información permite a la ciudadanía exigir medidas de protección ambiental.","La información está desagregada solo por barrio, no identifica a personas."],"consejo_razonamiento":["El Convenio de Aarhus otorga especial protección al acceso a información ambiental.","El riesgo de 'estigmatización de barrios' no es una excepción reconocida en la Ley 19/2014 catalana.","Los datos estadísticos de salud por áreas geográficas no son datos personales.","Se estima con acceso a informes íntegros, señalando que la interpretación es responsabilidad de quien los usa."]},{"consejo":"GAIP","referencia":"GAIP-0301/2023","fecha":"28/09/2023","anio":2023,"fallo":"desestimada","organismo":"Universitat de Barcelona","titulo":"Expedientes académicos de investigadores para evaluación de acreditación ANECA","materia":"educación","url":"https://gaip.cat/resolucions","administracion":["Los expedientes académicos contienen datos personales sensibles de los investigadores.","La Ley Orgánica de Protección de Datos impide su cesión sin consentimiento.","Los expedientes de terceros no pueden facilitarse a solicitantes distintos de su titular."],"solicitante":["Se solicita para un procedimiento de recusación en comité de evaluación, no para publicación.","El interés legítimo del solicitante justificaría el acceso a datos relevantes del evaluador.","La opacidad en los procesos de acreditación universitaria afecta al derecho a un procedimiento justo."],"consejo_razonamiento":["Los expedientes académicos individuales son datos personales cuya cesión requiere base jurídica específica.","El interés legítimo del solicitante no prevalece sobre el derecho a la protección de datos del tercero.","El mecanismo de recusación tiene sus propios cauces procedimentales con acceso limitado.","Se desestima pero se señala que la universidad debe garantizar la objetividad por otros medios."]},{"consejo":"GAIP","referencia":"GAIP-0412/2022","fecha":"17/11/2022","anio":2022,"fallo":"parcial","organismo":"Generalitat de Catalunya — Departament de Territori","titulo":"Informes técnicos sobre impacto ambiental del corredor mediterráneo a su paso por el Baix Llobregat","materia":"medio ambiente","url":"https://gaip.cat/resolucions","administracion":["El proyecto de infraestructura está en tramitación ambiental y los informes son documentos del expediente.","La publicación prematura podría condicionar la evaluación ambiental en curso."],"solicitante":["Los informes previos encargados a consultoras son documentos técnicos preexistentes al expediente.","El impacto ambiental sobre municipios afectados requiere transparencia para la participación pública.","La Directiva Europea de Evaluación Ambiental garantiza el acceso a información ambiental."],"consejo_razonamiento":["La Directiva 2011/92/UE y el Convenio de Aarhus prevalecen sobre las excepciones generales de tramitación.","Los informes de impacto ambiental encargados externamente son accesibles durante la tramitación.","Se estima parcialmente: los informes técnicos previos son accesibles; los borradores de resolución interna, no.","Se establece que la excepción de tramitación tiene límites ante el derecho de participación ambiental."]},{"consejo":"KOAIK","referencia":"KOAIK-082/2023","fecha":"03/05/2023","anio":2023,"fallo":"estimada","organismo":"Gobierno Vasco — Departamento de Salud","titulo":"Listas de espera quirúrgica por hospital y especialidad en Osakidetza","materia":"sanidad","url":"https://www.euskadi.eus/koaik","administracion":["Los datos de listas de espera por hospital podrían generar comparaciones injustas sin contexto.","Parte de los datos incluyen información sobre perfiles de pacientes que podría ser sensible."],"solicitante":["Las listas de espera son el principal indicador de calidad de la sanidad pública y de interés vital para los pacientes.","La Ley vasca de transparencia obliga a publicar indicadores de calidad de los servicios públicos.","Los datos solicitados son estadísticos, no identifican a pacientes individuales."],"consejo_razonamiento":["Las listas de espera son información de calidad del servicio público sanitario, de interés público máximo.","Los datos agregados por hospital y especialidad no permiten identificar a pacientes.","La Ley 2/2016 vasca de instituciones locales refuerza el acceso a indicadores de servicio público.","Se estima: Osakidetza debe facilitar los datos de espera por hospital y especialidad con actualización trimestral."]},{"consejo":"KOAIK","referencia":"KOAIK-134/2023","fecha":"19/09/2023","anio":2023,"fallo":"estimada","organismo":"Diputación Foral de Gipuzkoa","titulo":"Subvenciones a entidades deportivas y criterios de distribución","materia":"subvenciones","url":"https://www.euskadi.eus/koaik","administracion":["Los criterios de distribución forman parte de un sistema de valoración en revisión.","La publicación podría condicionar futuras solicitudes."],"solicitante":["Las subvenciones públicas deben ser transparentes conforme a la legislación básica estatal y vasca.","Los criterios de valoración son normas administrativas que deben ser conocidos por los solicitantes.","La opacidad en criterios de subvención vulnera el principio de concurrencia competitiva."],"consejo_razonamiento":["Los criterios de distribución de subvenciones son información normativa de obligada transparencia.","El argumento de que 'condicionar solicitudes futuras' es precisamente el objetivo de publicar los criterios.","Se estima: la Diputación debe publicar los criterios de valoración antes de la siguiente convocatoria.","Se señala la obligación de publicidad activa de subvenciones del art. 8 Ley 19/2013."]},{"consejo":"Andalucía","referencia":"CT/059/2023","fecha":"12/04/2023","anio":2023,"fallo":"estimada","organismo":"Junta de Andalucía — Consejería de Fomento","titulo":"Informes de inspección de viviendas de protección oficial en la provincia de Sevilla","materia":"urbanismo","url":"https://www.juntadeandalucia.es/transparencia","administracion":["Los informes de inspección contienen datos personales de los ocupantes de las viviendas.","La información sobre deficiencias de las viviendas podría perjudicar a los beneficiarios."],"solicitante":["Se solicitan los informes disociados de datos personales, solo con datos técnicos y estadísticos.","La calidad del parque de VPO es información de interés público para los ciudadanos en lista de espera.","El control de la correcta aplicación de las ayudas públicas requiere transparencia."],"consejo_razonamiento":["Los datos técnicos de los informes de inspección pueden disociarse de los datos personales de los ocupantes.","El interés público en el control de VPO es un valor que debe ponderarse favorablemente.","La disociación es técnicamente posible y jurídicamente exigible antes de denegar el acceso.","Se estima con entrega de informes disociados de datos personales de los ocupantes."]},{"consejo":"Andalucía","referencia":"CT/112/2023","fecha":"07/07/2023","anio":2023,"fallo":"desestimada","organismo":"Universidad de Sevilla","titulo":"Calificaciones individuales en pruebas de habilitación de plazas de profesor","materia":"educación","url":"https://www.juntadeandalucia.es/transparencia","administracion":["Las calificaciones individuales son datos personales del candidato que obtuvo la plaza.","La publicación de calificaciones individuales ajenas vulnera la protección de datos."],"solicitante":["En procedimientos de concurrencia competitiva los participantes tienen derecho a conocer los criterios de selección.","Las actas de los tribunales son documentos públicos en los procesos selectivos.","La transparencia en la selección de personal docente es esencial para la igualdad de oportunidades."],"consejo_razonamiento":["Las calificaciones individuales de terceros son datos personales cuya cesión requiere consentimiento.","Las actas de tribunales con criterios y puntuaciones globales sí son accesibles.","El solicitante puede acceder a las actas del proceso pero no a las puntuaciones individuales ajenas.","Se desestima en lo relativo a calificaciones individuales; se ordena facilitar las actas colectivas."]},{"consejo":"Madrid","referencia":"CMT/088/2023","fecha":"22/08/2023","anio":2023,"fallo":"estimada","organismo":"Consejería de Sanidad — Comunidad de Madrid","titulo":"Contratos de emergencia con empresas de material sanitario durante el COVID-19","materia":"contratación","url":"https://www.comunidad.madrid/transparencia","administracion":["Los contratos de emergencia del período COVID son objeto de auditoría y no pueden divulgarse hasta su cierre.","Algunos contratos incluyen cláusulas de confidencialidad con los proveedores."],"solicitante":["Los contratos de emergencia son contratos públicos sujetos a la legislación de transparencia.","Las cláusulas de confidencialidad no pueden oponerse a la obligación legal de transparencia.","El Tribunal de Cuentas y el Congreso han exigido información sobre estos contratos."],"consejo_razonamiento":["La urgencia no exime de la obligación de transparencia una vez adjudicado el contrato.","Las cláusulas de confidencialidad en contratos públicos no son oponibles frente a obligaciones legales.","Los contratos deben facilitarse con posible tachado de información técnica genuinamente sensible.","Se estima: la Consejería debe entregar los contratos en el plazo de 15 días hábiles."]},{"consejo":"Valencia","referencia":"CTBGCV/024/2023","fecha":"16/03/2023","anio":2023,"fallo":"estimada","organismo":"Conselleria de Medi Ambient — Generalitat Valenciana","titulo":"Resoluciones sancionadoras en materia de vertidos a cauces públicos en 2021-2022","materia":"medio ambiente","url":"https://www.gva.es/transparencia","administracion":["Las resoluciones sancionadoras contienen datos de identidad de los infractores.","La publicación masiva podría vulnerar el derecho al honor y a la intimidad de las personas sancionadas."],"solicitante":["Las sanciones por vertidos son actos administrativos que afectan al interés público medioambiental.","La publicación de sanciones es una medida disuasoria reconocida en la legislación ambiental.","El Convenio de Aarhus garantiza el acceso a información ambiental incluyendo infracciones."],"consejo_razonamiento":["El Convenio de Aarhus y la Ley de Información Ambiental favorecen especialmente el acceso en esta materia.","Las sanciones ambientales tienen una vertiente pública que justifica su divulgación.","Se aplica la ponderación: para personas físicas, disociación del nombre; para personas jurídicas, acceso íntegro.","Se estima con acceso íntegro para sanciones a empresas y con disociación de nombre para personas físicas."]},{"consejo":"Valencia","referencia":"CTBGCV/067/2023","fecha":"28/06/2023","anio":2023,"fallo":"desestimada","organismo":"Ajuntament de València","titulo":"Correos electrónicos internos sobre la negociación del PGOU de Valencia","materia":"urbanismo","url":"https://www.gva.es/transparencia","administracion":["Los correos internos forman parte del proceso deliberativo de los funcionarios.","La excepción del proceso de toma de decisiones (art. 14.1.a) protege la libre formación de la voluntad administrativa.","El PGOU está en tramitación y la divulgación de deliberaciones internas podría comprometer el procedimiento."],"solicitante":["El PGOU de Valencia afecta a cientos de miles de ciudadanos y requiere máxima transparencia.","Los correos solicitados no son deliberaciones sino comunicaciones sobre decisiones ya adoptadas.","La corrupción urbanística requiere que el proceso de planificación sea transparente."],"consejo_razonamiento":["La excepción del proceso deliberativo protege la formación interna de criterios, no la comunicación de decisiones.","Sin embargo, los correos pueden contener información mixta difícil de separar durante la tramitación.","El PGOU en tramitación activa justifica una cautela temporal sobre comunicaciones internas relativas a él.","Se desestima temporalmente: la solicitud podrá reiterarse una vez aprobado definitivamente el PGOU."]},{"consejo":"CTBG","referencia":"R/0260/2022","fecha":"18/07/2022","anio":2022,"fallo":"estimada","organismo":"Ministerio de Sanidad","titulo":"Actas de las reuniones del Consejo Interterritorial del Sistema Nacional de Salud sobre COVID-19","materia":"sanidad","url":"https://www.consejodetransparencia.es/ct_Home/Reclamaciones/resoluciones.html","administracion":["Las actas contienen deliberaciones entre el Estado y las CCAA sujetas a confidencialidad institucional.","La publicación podría afectar a las relaciones institucionales entre administraciones."],"solicitante":["Las reuniones del CISNS son el principal órgano de coordinación sanitaria; sus acuerdos son de interés público máximo.","Durante la pandemia, las decisiones de este consejo tuvieron efectos directos sobre la vida de los ciudadanos.","La rendición de cuentas sobre la gestión de la pandemia exige transparencia en las decisiones adoptadas."],"consejo_razonamiento":["El interés público en la gestión de la pandemia es de intensidad excepcional.","Las actas de órganos colegiados de coordinación intergubernamental no tienen protección per se.","La confidencialidad entre administraciones no está reconocida como excepción en la Ley 19/2013.","Se estima: las actas deben facilitarse con posible tachado de datos de contacto de participantes."]},{"consejo":"CTBG","referencia":"R/0335/2022","fecha":"28/09/2022","anio":2022,"fallo":"parcial","organismo":"Ministerio de Transportes, Movilidad y Agenda Urbana","titulo":"Informes de rentabilidad económica de líneas de AVE por tramo","materia":"otros","url":"https://www.consejodetransparencia.es/ct_Home/Reclamaciones/resoluciones.html","administracion":["Los informes de rentabilidad son documentos internos de gestión de Renfe y ADIF, no del Ministerio.","Parte de la información tiene carácter de secreto comercial de las operadoras ferroviarias."],"solicitante":["Las líneas de AVE son infraestructuras públicas construidas con fondos europeos y presupuesto del Estado.","El debate sobre la rentabilidad del AVE es de interés público nacional.","Los informes de rentabilidad existen y son la base de las decisiones de inversión pública."],"consejo_razonamiento":["El Ministerio tiene obligación de acceso a información que obre en su poder o en el de entidades bajo su control.","Los datos de rentabilidad por tramo son accesibles; los datos comerciales de las operadoras requieren ponderación.","Se estima parcialmente: datos de ocupación, ingresos globales y costes por tramo son accesibles.","Se excluyen datos que pudieran identificar estrategias comerciales específicas de los operadores."]},{"consejo":"CTBG","referencia":"R/0089/2022","fecha":"14/03/2022","anio":2022,"fallo":"estimada","organismo":"Consejo General del Poder Judicial (CGPJ)","titulo":"Estadísticas de resolución de asuntos por juzgado y tiempo medio de espera","materia":"otros","url":"https://www.consejodetransparencia.es/ct_Home/Reclamaciones/resoluciones.html","administracion":["El CGPJ publica memorias anuales con datos generales de actividad judicial.","Los datos por juzgado individual podrían afectar a la independencia judicial.","La comparación entre juzgados sin contexto puede ser injusta para los jueces."],"solicitante":["La eficiencia del sistema judicial es un indicador público fundamental para los ciudadanos.","El CGPJ ya publica parte de estos datos; la negativa a desagregarlos por juzgado carece de base.","La independencia judicial no implica opacidad en la gestión de recursos."],"consejo_razonamiento":["Las estadísticas de actividad judicial son información de funcionamiento de un servicio público.","La independencia judicial protege a los jueces frente a presiones sobre sus decisiones, no sobre su productividad.","Los datos por juzgado no revelan el contenido de resoluciones ni condicionan decisiones futuras.","Se estima: el CGPJ debe facilitar las estadísticas de actividad desagregadas por órgano judicial."]},{"consejo":"CTBG","referencia":"R/0156/2021","fecha":"12/05/2021","anio":2021,"fallo":"estimada","organismo":"Instituto Nacional de Estadística (INE)","titulo":"Metodología completa del cálculo del IPC y tablas de ponderaciones por categoría","materia":"otros","url":"https://www.consejodetransparencia.es/ct_Home/Reclamaciones/resoluciones.html","administracion":["La metodología del IPC es pública y está publicada en la web del INE.","Las tablas de ponderaciones detalladas son documentos técnicos internos en revisión."],"solicitante":["La metodología publicada por el INE es insuficiente para que investigadores independientes puedan replicar el cálculo.","La transparencia metodológica del IPC es esencial para la credibilidad de la estadística oficial.","Eurostat publica metodologías más detalladas que el INE para el mismo indicador."],"consejo_razonamiento":["Las tablas de ponderaciones son documentos técnicos que sustentan un indicador de máxima relevancia pública.","El argumento de 'revisión en curso' no puede justificar indefinidamente la no publicación.","La transparencia metodológica de la estadística pública es un estándar internacional que España debe cumplir.","Se estima: el INE debe facilitar las tablas de ponderaciones vigentes en el momento de la solicitud."]}]
+;
+
+// ── Indexado de texto completo para búsqueda rápida ──
+const SEARCH_INDEX = RESOLUCIONES_DB.map((r,i) => ({
+  idx: i,
+  blob: [r.consejo, r.referencia, r.organismo, r.titulo, r.materia,
+         ...(r.administracion||[]), ...(r.solicitante||[]), ...(r.consejo_razonamiento||[])]
+         .join(' ').toLowerCase()
+}));
+
+function buscarDoctrina() {
+  const consejo   = document.getElementById('d-consejo').value;
+  const resultado = document.getElementById('d-resultado').value;
+  const materia   = document.getElementById('d-materia').value;
+  const query     = document.getElementById('d-query').value.trim().toLowerCase();
+
+  if (!consejo && !materia && !query && resultado === 'todos') {
+    alert('Selecciona al menos un filtro para buscar.');
+    return;
+  }
+
+  document.getElementById('doctrina-empty').style.display = 'none';
+  document.getElementById('doctrina-error').classList.remove('show');
+
+  // Filtrar
+  let filtrados = RESOLUCIONES_DB.filter((r, i) => {
+    if (consejo !== 'todos' && r.consejo !== consejo) return false;
+    if (resultado !== 'todos' && r.fallo !== resultado) return false;
+    if (materia && !r.materia.includes(materia)) return false;
+    if (query) {
+      const blob = SEARCH_INDEX[i].blob;
+      return query.split(/\s+/).every(term => blob.includes(term));
+    }
+    return true;
+  });
+
+  // Ordenar: más reciente primero
+  filtrados.sort((a,b) => {
+    const parseDate = d => { const [dd,mm,yy] = d.split('/'); return new Date(yy,mm-1,dd); };
+    try { return parseDate(b.fecha) - parseDate(a.fecha); } catch(e) { return 0; }
+  });
+
+  const filtros = [
+    consejo !== 'todos' ? consejo : 'Todos los consejos',
+    resultado !== 'todos' ? resultado : '',
+    materia || '',
+    query ? `"${query}"` : '',
+  ].filter(Boolean).join(' · ');
+
+  renderDoctrina({ total: filtrados.length, resoluciones: filtrados, nota: filtros });
+}
+
+// Buscar al pulsar Enter en el campo de texto
+document.addEventListener('DOMContentLoaded', () => {
+  const qi = document.getElementById('d-query');
+  if (qi) qi.addEventListener('keydown', e => { if (e.key === 'Enter') buscarDoctrina(); });
+});
+
+function renderDoctrina(data) {
+  const resultsEl = document.getElementById('doctrina-results');
+  const listEl    = document.getElementById('results-list');
+  const titleEl   = document.getElementById('results-title');
+  const metaEl    = document.getElementById('results-meta');
+
+  listEl.innerHTML = '';
+
+  if (!data.resoluciones || data.resoluciones.length === 0) {
+    listEl.innerHTML = `
+      <div class="doctrina-empty" style="display:block">
+        <div class="empty-icon">🔍</div>
+        <h3>Sin resultados</h3>
+        <p>No hay resoluciones que coincidan con esos filtros. Prueba a ampliar la búsqueda o a usar otras palabras clave.</p>
+      </div>`;
+    titleEl.textContent = 'Sin resultados';
+    metaEl.textContent = data.nota || '';
+    resultsEl.classList.add('show');
+    return;
+  }
+
+  titleEl.textContent = `${data.total} resolución${data.total !== 1 ? 'es' : ''} encontrada${data.total !== 1 ? 's' : ''}`;
+  metaEl.textContent = `${data.nota} · Base de datos actualizada: abril 2025`;
+
+  data.resoluciones.forEach((r, idx) => {
+    const falloClass = r.fallo === 'estimada' ? 'estimada' : r.fallo === 'parcial' ? 'parcial' : 'desestimada';
+    const falloLabel = r.fallo === 'estimada' ? '✓ Estimada' : r.fallo === 'parcial' ? '≈ Parcial' : '✗ Desestimada';
+
+    const adminBullets   = (r.administracion?.length ? r.administracion : ['No disponible']).map(b => `<li>${b}</li>`).join('');
+    const solBullets     = (r.solicitante?.length ? r.solicitante : ['No disponible']).map(b => `<li>${b}</li>`).join('');
+    const consejoBullets = (r.consejo_razonamiento?.length ? r.consejo_razonamiento : ['No disponible']).map(b => `<li>${b}</li>`).join('');
+
+    const urlLink = r.url
+      ? `<a href="${r.url}" target="_blank" class="res-link">Ver en web oficial →</a>`
+      : `<span class="res-link" style="color:var(--muted);cursor:default">Sin URL directa</span>`;
+
+    // Store globally for use as precedent
+    const globalIdx = RESOLUCIONES_DB.indexOf(r);
+
+    listEl.innerHTML += `
+      <div class="res-card">
+        <div class="res-card-head">
+          <div><div class="res-consejo-badge">${r.consejo}</div></div>
+          <div class="res-head-info">
+            <div class="res-ref">${r.referencia} · ${r.fecha}</div>
+            <div class="res-title">${r.titulo}</div>
+            <div class="res-meta-row">
+              <span class="res-meta-item">🏛 ${r.organismo}</span>
+              <span class="res-meta-item">📂 ${r.materia}</span>
+            </div>
+          </div>
+          <div class="res-fallo ${falloClass}">${falloLabel}</div>
+        </div>
+        <div class="res-summary">
+          <div class="res-col">
+            <div class="res-col-title" onclick="toggleCol(this)">
+              <div class="col-dot"></div>Razones de la administración
+              <span class="col-arrow">▼</span>
+            </div>
+            <div class="res-col-body"><ul class="res-bullets">${adminBullets}</ul></div>
+          </div>
+          <div class="res-col">
+            <div class="res-col-title" onclick="toggleCol(this)">
+              <div class="col-dot"></div>Alegaciones del solicitante
+              <span class="col-arrow">▼</span>
+            </div>
+            <div class="res-col-body"><ul class="res-bullets">${solBullets}</ul></div>
+          </div>
+          <div class="res-col">
+            <div class="res-col-title" onclick="toggleCol(this)">
+              <div class="col-dot"></div>Razonamiento del consejo
+              <span class="col-arrow">▼</span>
+            </div>
+            <div class="res-col-body"><ul class="res-bullets">${consejoBullets}</ul></div>
+          </div>
+        </div>
+        <div class="res-footer">
+          ${urlLink}
+          <button class="res-usar-btn" onclick="usarEnReclamacion(${globalIdx})">Usar como precedente →</button>
+        </div>
+      </div>`;
+  });
+
+  window._doctrinaResults = RESOLUCIONES_DB;
+  resultsEl.classList.add('show');
+  resultsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function toggleCol(titleEl) {
+  titleEl.parentElement.classList.toggle('open');
+}
+
+function usarEnReclamacion(idx) {
+  const r = RESOLUCIONES_DB[idx];
+  if (!r) return;
+  showPage('redactar', document.querySelectorAll('.nav-btn')[2]);
+  setTimeout(() => {
+    switchTool('reclamacion', document.querySelectorAll('.tool-tab')[1]);
+    const argEl = document.getElementById('r-argumento');
+    if (argEl) {
+      argEl.value = `Resolución ${r.referencia} del ${r.consejo} (${r.fecha}, ${r.fallo}): ${(r.consejo_razonamiento||[]).slice(0,2).join('. ')}.`;
+      argEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, 350);
+}
+
+</script>
+</body>
+</html>
