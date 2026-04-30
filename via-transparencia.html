@@ -1239,6 +1239,7 @@
     footer { flex-direction: column; gap: 8px; text-align: center; }
   }
 </style>
+<script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 </head>
 <body>
 
@@ -2510,6 +2511,25 @@ function usarEnReclamacion(idx) {
   }, 350);
 }
 
+</script>
+<script>
+  // Netlify Identity — gestión de invitaciones y login
+  if (window.netlifyIdentity) {
+    window.netlifyIdentity.on('init', function(user) {
+      if (!user) {
+        window.netlifyIdentity.on('login', function() {
+          document.location.href = '/admin/';
+        });
+      }
+    });
+    // Si la URL contiene un token de invitación, abrir el widget automáticamente
+    if (window.location.hash && window.location.hash.indexOf('invite_token') !== -1) {
+      window.netlifyIdentity.open();
+    }
+    if (window.location.hash && window.location.hash.indexOf('recovery_token') !== -1) {
+      window.netlifyIdentity.open();
+    }
+  }
 </script>
 </body>
 </html>
