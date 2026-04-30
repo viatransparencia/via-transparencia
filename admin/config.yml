@@ -1,17 +1,13 @@
 backend:
-  name: git-gateway
+  name: github
+  repo: TUUSUARIO/via-transparencia
   branch: main
 
-# Subir imágenes y PDFs aquí
 media_folder: "docs"
 public_folder: "/docs"
 
-# Acceso solo con invitación (Netlify Identity)
-publish_mode: editorial_workflow
-
 collections:
 
-  # ── RESOLUCIONES ──────────────────────────────────────────────────────────
   - name: "resoluciones"
     label: "Resoluciones"
     label_singular: "Resolución"
@@ -23,26 +19,22 @@ collections:
     fields:
       - { label: "Consejo", name: "consejo", widget: "select",
           options: ["CTBG","GAIP","KOAIK","Andalucía","Aragón","Canarias","Galicia","Madrid","Valencia","Otro"] }
-      - { label: "Referencia", name: "referencia", widget: "string",
-          hint: "Ej: R/0084/2024 o GAIP-0234/2023" }
+      - { label: "Referencia", name: "referencia", widget: "string" }
       - { label: "Fecha", name: "fecha", widget: "datetime",
           date_format: "DD/MM/YYYY", time_format: false }
       - { label: "Resultado", name: "fallo", widget: "select",
           options: ["estimada","desestimada","parcial"] }
       - { label: "Organismo recurrido", name: "organismo", widget: "string" }
-      - { label: "Título del caso", name: "titulo", widget: "string",
-          hint: "Descripción breve del caso (máx 120 caracteres)" }
+      - { label: "Título del caso", name: "titulo", widget: "string" }
       - { label: "Materia", name: "materia", widget: "select",
           options: ["contratación","subvenciones","personal","medio ambiente","urbanismo",
                     "sanidad","educación","datos personales","silencio administrativo",
                     "expediente en tramitación","seguridad","secreto profesional","otros"] }
-      - { label: "URL a la resolución original", name: "url", widget: "string",
-          required: false, hint: "URL directa en la web del consejo" }
+      - { label: "URL resolución original", name: "url", widget: "string", required: false }
       - label: "Razones de la administración"
         name: "administracion"
         widget: "list"
         field: { label: "Razón", name: "item", widget: "string" }
-        hint: "Una razón por línea. Mínimo 1, máximo 5."
       - label: "Alegaciones del solicitante"
         name: "solicitante"
         widget: "list"
@@ -52,13 +44,9 @@ collections:
         name: "consejo_razonamiento"
         widget: "list"
         field: { label: "Argumento", name: "item", widget: "string" }
-        hint: "Los argumentos clave de la resolución."
-      - { label: "Documento PDF", name: "pdf", widget: "file",
-          required: false, hint: "Sube el PDF de la resolución original si lo tienes" }
-      - { label: "Notas internas", name: "notas", widget: "text",
-          required: false, hint: "Notas que NO se publican en la web" }
+      - { label: "Documento PDF", name: "pdf", widget: "file", required: false }
+      - { label: "Notas internas", name: "notas", widget: "text", required: false }
 
-  # ── SOLICITUDES PROPIAS ───────────────────────────────────────────────────
   - name: "solicitudes"
     label: "Nuestras solicitudes"
     label_singular: "Solicitud"
