@@ -1,6 +1,6 @@
 backend:
   name: github
-  repo: TUUSUARIO/via-transparencia
+  repo: viatransparencia/via-transparencia
   branch: main
 
 media_folder: "docs"
