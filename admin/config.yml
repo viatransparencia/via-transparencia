@@ -1,10 +1,11 @@
 backend:
-  name: github
-  repo: viatransparencia/via-transparencia
+  name: git-gateway
   branch: main
 
 media_folder: "docs"
 public_folder: "/docs"
+
+publish_mode: editorial_workflow
 
 collections:
 
