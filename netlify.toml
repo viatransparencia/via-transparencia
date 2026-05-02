@@ -9,8 +9,20 @@
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
 
-# Redirige index.html como página principal
+# Página principal
 [[redirects]]
   from = "/"
   to   = "/via-transparencia.html"
   status = 200
+
+# Redirigir tokens de invitación y recuperación a la página dedicada
+[[redirects]]
+  from = "/#invite_token=*"
+  to   = "/confirm.html#invite_token=:splat"
+  status = 301
+
+[[redirects]]
+  from = "/#recovery_token=*"
+  to   = "/confirm.html#recovery_token=:splat"
+  status = 301
+
