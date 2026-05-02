@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>vía Transparencia · Acceso</title>
+  <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Georgia', serif;
+      background: #f5f1ea;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .box {
+      background: white;
+      border: 2px solid #0f0e0d;
+      padding: 48px 40px;
+      max-width: 420px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 6px 6px 0 #0f0e0d;
+    }
+    .logo {
+      font-size: 22px;
+      font-weight: 900;
+      margin-bottom: 8px;
+    }
+    .logo em { font-style: italic; color: #c0392b; }
+    .subtitle {
+      font-family: monospace;
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #999;
+      margin-bottom: 36px;
+    }
+    h1 {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+    p {
+      font-size: 14px;
+      color: #666;
+      line-height: 1.6;
+      margin-bottom: 28px;
+    }
+    .btn {
+      display: inline-block;
+      background: #0f0e0d;
+      color: white;
+      padding: 13px 28px;
+      font-family: monospace;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      border: none;
+      cursor: pointer;
+      width: 100%;
+      transition: opacity 0.15s;
+    }
+    .btn:hover { opacity: 0.85; }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .status {
+      margin-top: 20px;
+      font-size: 13px;
+      color: #666;
+      min-height: 20px;
+    }
+    .status.ok { color: #1d5c3a; font-weight: 600; }
+    .status.err { color: #c0392b; }
+    .spinner {
+      display: inline-block;
+      width: 14px; height: 14px;
+      border: 2px solid #ddd;
+      border-top-color: #0f0e0d;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+<div class="box">
+  <div class="logo"><em>vía</em> Transparencia</div>
+  <div class="subtitle">· Panel de administración ·</div>
+
+  <div id="state-loading">
+    <h1>Verificando acceso…</h1>
+    <p>Procesando tu invitación, un momento.</p>
+    <div class="status"><span class="spinner"></span> Cargando…</div>
+  </div>
+
+  <div id="state-invite" style="display:none">
+    <h1>Crea tu contraseña</h1>
+    <p>Haz clic en el botón para completar el registro y acceder al panel de administración.</p>
+    <button class="btn" id="btn-accept">Completar registro →</button>
+    <div class="status" id="invite-status"></div>
+  </div>
+
+  <div id="state-recovery" style="display:none">
+    <h1>Restablecer contraseña</h1>
+    <p>Haz clic para establecer una nueva contraseña de acceso.</p>
+    <button class="btn" id="btn-recovery">Establecer contraseña →</button>
+    <div class="status" id="recovery-status"></div>
+  </div>
+
+  <div id="state-logged" style="display:none">
+    <h1>✓ Sesión iniciada</h1>
+    <p>Ya tienes acceso. Redirigiendo al panel de administración…</p>
+    <div class="status ok">Redirigiendo…</div>
+  </div>
+
+  <div id="state-error" style="display:none">
+    <h1>Enlace caducado</h1>
+    <p>Este enlace ya no es válido. Pide una nueva invitación desde el panel de Netlify.</p>
+    <div class="status err" id="error-msg"></div>
+  </div>
+</div>
+
+<script>
+  function show(id) {
+    ['loading','invite','recovery','logged','error'].forEach(s => {
+      document.getElementById('state-' + s).style.display = s === id ? 'block' : 'none';
+    });
+  }
+
+  // Esperar a que el widget esté listo
+  window.netlifyIdentity.on('init', function(user) {
+    if (user) {
+      // Ya autenticado
+      show('logged');
+      setTimeout(() => { window.location.href = '/admin/'; }, 1500);
+      return;
+    }
+
+    // Leer el hash de la URL para detectar el tipo de token
+    const hash = window.location.hash;
+    const params = new URLSearchParams(hash.replace('#', ''));
+
+    const inviteToken   = params.get('invite_token');
+    const recoveryToken = params.get('recovery_token');
+    const errorDesc     = params.get('error_description');
+
+    if (errorDesc) {
+      show('error');
+      document.getElementById('error-msg').textContent = decodeURIComponent(errorDesc);
+      return;
+    }
+
+    if (inviteToken) {
+      show('invite');
+      document.getElementById('btn-accept').addEventListener('click', function() {
+        this.disabled = true;
+        document.getElementById('invite-status').innerHTML = '<span class="spinner"></span> Abriendo formulario…';
+        window.netlifyIdentity.open('invite');
+      });
+      return;
+    }
+
+    if (recoveryToken) {
+      show('recovery');
+      document.getElementById('btn-recovery').addEventListener('click', function() {
+        this.disabled = true;
+        document.getElementById('recovery-status').innerHTML = '<span class="spinner"></span> Abriendo formulario…';
+        window.netlifyIdentity.open('recovery');
+      });
+      return;
+    }
+
+    // No hay token — mostrar login normal
+    show('invite');
+    document.getElementById('state-invite').querySelector('h1').textContent = 'Iniciar sesión';
+    document.getElementById('state-invite').querySelector('p').textContent = 'Accede al panel de administración de vía Transparencia.';
+    document.getElementById('btn-accept').textContent = 'Iniciar sesión →';
+    document.getElementById('btn-accept').addEventListener('click', function() {
+      window.netlifyIdentity.open('login');
+    });
+  });
+
+  // Cuando se loguea correctamente → al admin
+  window.netlifyIdentity.on('login', function() {
+    show('logged');
+    setTimeout(() => { window.location.href = '/admin/'; }, 1000);
+  });
+</script>
+</body>
+</html>
