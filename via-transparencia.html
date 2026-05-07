@@ -1852,7 +1852,6 @@ function showPage(name, el) {
   if (el) el.classList.add('active');
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
-</script>
 // ── MODAL DATA ──
 const resData = [];
 
@@ -2210,7 +2209,8 @@ function copiarRedaccion() {
 // DOCTRINA DE CONSEJOS — base de datos estática
 // ══════════════════════════════════════
 
-const RESOLUCIONES_DB = <script>
+</script>
+<script>
 // ── Base de datos de resoluciones — carga dinámica ────────────────────────
 // El archivo resoluciones.json debe estar en la raíz del repositorio.
 
@@ -2282,9 +2282,6 @@ document.addEventListener('DOMContentLoaded', () => {
 ;
 <script>
 // ── Indexado de texto completo para búsqueda rápida ──
-const SEARCH_INDEX = RESOLUCIONES_DB.map 
-  ;
-
 function buscarDoctrina() {
   const consejo   = document.getElementById('d-consejo').value;
   const resultado = document.getElementById('d-resultado').value;
@@ -2300,15 +2297,16 @@ function buscarDoctrina() {
   document.getElementById('doctrina-error').classList.remove('show');
 
   // Filtrar
-  let filtrados = RESOLUCIONES_DB.filter((r, i) => {
-    if (consejo !== 'todos' && r.consejo !== consejo) return false;
-    if (resultado !== 'todos' && r.fallo !== resultado) return false;
-    if (materia && !r.materia.includes(materia)) return false;
+  let filtrados = [];
+  RESOLUCIONES_DB.forEach((r, i) => {
+    if (consejo !== 'todos' && r.consejo !== consejo) return;
+    if (resultado !== 'todos' && r.fallo !== resultado) return;
+    if (materia && !r.materia.includes(materia)) return;
     if (query) {
-      const blob = SEARCH_INDEX[i].blob;
-      return query.split(/\s+/).every(term => blob.includes(term));
+      const blob = SEARCH_INDEX[i]?.blob || '';
+      if (!query.split(/\s+/).every(term => blob.includes(term))) return;
     }
-    return true;
+    filtrados.push({ ...r, _gi: i });
   });
 
   // Ordenar: más reciente primero
@@ -2357,7 +2355,15 @@ function renderDoctrina(data) {
   titleEl.textContent = `${data.total} resolución${data.total !== 1 ? 'es' : ''} encontrada${data.total !== 1 ? 's' : ''}`;
   metaEl.textContent = `${data.nota} · Base de datos actualizada: abril 2025`;
 
-  data.resoluciones.forEach((r, idx) => {
+  // Limitar a 500 resultados para no saturar el DOM
+  const MAX_RESULTS = 500;
+  const mostrar = data.resoluciones.slice(0, MAX_RESULTS);
+  if (data.resoluciones.length > MAX_RESULTS) {
+    metaEl.textContent += ` · Mostrando ${MAX_RESULTS} de ${data.resoluciones.length} (afina los filtros para ver más)`;
+  }
+
+  // Una sola escritura al DOM (evita el O(n²) de innerHTML +=)
+  listEl.innerHTML = mostrar.map((r) => {
     const falloClass = r.fallo === 'estimada' ? 'estimada' : r.fallo === 'parcial' ? 'parcial' : 'desestimada';
     const falloLabel = r.fallo === 'estimada' ? '✓ Estimada' : r.fallo === 'parcial' ? '≈ Parcial' : '✗ Desestimada';
 
@@ -2369,10 +2375,9 @@ function renderDoctrina(data) {
       ? `<a href="${r.url}" target="_blank" class="res-link">Ver en web oficial →</a>`
       : `<span class="res-link" style="color:var(--muted);cursor:default">Sin URL directa</span>`;
 
-    // Store globally for use as precedent
-    const globalIdx = RESOLUCIONES_DB.indexOf(r);
+    const globalIdx = r._gi ?? 0;
 
-    listEl.innerHTML += `
+    return `
       <div class="res-card">
         <div class="res-card-head">
           <div><div class="res-consejo-badge">${r.consejo}</div></div>
@@ -2414,7 +2419,7 @@ function renderDoctrina(data) {
           <button class="res-usar-btn" onclick="usarEnReclamacion(${globalIdx})">Usar como precedente →</button>
         </div>
       </div>`;
-  });
+  }).join('');
 
   window._doctrinaResults = RESOLUCIONES_DB;
   resultsEl.classList.add('show');
