@@ -1434,8 +1434,6 @@
      PAGE: DOCTRINA DE CONSEJOS
 ══════════════════════════════════════════ -->
 <div id="page-doctrina" class="page">
-<div class="doctrina-layout">
-
   <div class="page-hero">
     <div class="page-hero-inner">
       <div class="page-hero-tag">· Base de datos · CTBG · GAIP · KOAIK · Consejos autonómicos ·</div>
@@ -1443,7 +1441,7 @@
       <p>Base de datos de resoluciones reales del CTBG y órganos autonómicos. Filtra por consejo, resultado, materia o palabras clave. Cada resolución incluye las posiciones de la administración, el solicitante y el razonamiento del consejo.</p>
     </div>
   </div>
-  </div>
+<div class="doctrina-layout">
 
   <!-- Filtros -->
   <div class="doctrina-filters">
@@ -1531,8 +1529,6 @@
      PAGE: REDACTAR DOCUMENTO
 ══════════════════════════════════════════ -->
 <div id="page-redactar" class="page">
-<div class="page-inner" style="max-width:860px;margin:48px auto;padding:0 32px 64px">
-
   <div class="page-hero">
     <div class="page-hero-inner">
       <div class="page-hero-tag">· Herramienta de IA · Ley 19/2013 ·</div>
@@ -1540,6 +1536,7 @@
       <p>Genera solicitudes de acceso a información pública o reclamaciones ante los consejos de transparencia con argumentación basada en resoluciones reales del CTBG y órganos autonómicos de garantía.</p>
     </div>
   </div>
+<div class="page-inner" style="max-width:860px;margin:0 auto;padding:32px 32px 64px">
 
   <!-- Selector de tipo de documento -->
   <div class="tool-tabs">
@@ -2097,7 +2094,7 @@ const PAGE_SLUGS = {
   doctrina:     'doctrina',
   redactar:     'redactar',
   proponer:     'proponer',
-  contacto:     'sobre-nosotros',
+  contacto:     'nosotros',
 };
 const SLUG_TO_PAGE = Object.fromEntries(Object.entries(PAGE_SLUGS).map(([k,v]) => [v, k]));
 
