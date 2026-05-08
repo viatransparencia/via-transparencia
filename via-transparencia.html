@@ -1419,14 +1419,14 @@
       <div class="widget">
         <div class="widget-title">· ¿Tienes una idea? ·</div>
         <p style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:14px">¿Sabes de algo que debería ser público? Proponlo y te redactamos la solicitud.</p>
-        <button onclick="showPage('proponer', document.querySelector('.nav-btn:nth-child(2)'))" class="btn-primary" style="width:100%;justify-content:center">Proponer →</button>
+        <button onclick="showPage('proponer', [...document.querySelectorAll('.nav-btn')].find(b=>b.textContent.includes('Proponer')))" class="btn-primary" style="width:100%;justify-content:center">Proponer →</button>
       </div>
     </aside>
   </div>
 
   <div class="about-strip">
     <p><strong>¿Qué es Vía Transparencia?</strong> Somos dos ciudadanos (y periodistas) que usan la Ley de Transparencia para pedir información a las administraciones, tanto central, como autonómicas y locales. Documentamos cada solicitud y publicamos los las resoluciones y aquello que nos responden -o no-. Todo el material original está disponible para su reutilización bajo CC BY-SA.</p>
-    <button onclick="showPage('contacto', document.querySelector('.nav-btn:nth-child(3)'))" class="btn-primary" style="white-space:nowrap">Sobre nosotros →</button>
+    <button onclick="showPage('contacto', [...document.querySelectorAll('.nav-btn')].find(b=>b.textContent.includes('nosotros')))" class="btn-primary" style="white-space:nowrap">Sobre nosotros →</button>
   </div>
 </div>
 
@@ -1883,8 +1883,8 @@
           <div style="width:2px;background:var(--border);flex:1;margin-top:4px"></div>
         </div>
         <div style="padding:0 0 28px 0;flex:1">
-          <div style="font-family:'Playfair Display',serif;font-size:18px;font-weight:700;margin-bottom:6px">Si te deniegan, puedes reclamar</div>
-          <p style="font-size:13px;line-height:1.7;color:var(--muted);margin-bottom:10px">Si la respuesta es negativa o no llega, tienes un mes para presentar una reclamación ante el consejo de transparencia competente: el CTBG (estatal + Principado de Asturias, Illes Balears, Cantabria, Extremadura, La Rioja, Ceuta y Melilla) o el equivalente autonómico para Andalucía, Aragón, Canarias, Cataluña, Euskadi, Galicia, Comunidad de Madrid, Comunidad Valenciana. Es gratuito, no necesitas abogado y tiene fuerza vinculante.</p>
+          <div style="font-family:'Playfair Display',serif;font-size:18px;font-weight:700;margin-bottom:6px">Si te deniegan o estás en desacuerdo con la respuesta, puedes reclamar</div>
+          <p style="font-size:13px;line-height:1.7;color:var(--muted);margin-bottom:10px">Si la respuesta es negativa, no estás de acuerdo con ella o no llega, tienes un mes para presentar una reclamación ante el consejo de transparencia competente: el CTBG (estatal + Principado de Asturias, Illes Balears, Cantabria, Extremadura, La Rioja, Ceuta y Melilla) o el equivalente autonómico para Andalucía, Aragón, Canarias, Cataluña, Euskadi, Galicia, Comunidad de Madrid, Comunidad Valenciana. Es gratuito, no necesitas abogado y tiene fuerza vinculante.</p>
           <div style="display:flex;gap:8px;flex-wrap:wrap">
             <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1px;padding:4px 10px;background:var(--cream);border:1px solid var(--border);color:var(--muted)">Art. 24 Ley 19/2013</span>
             <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1px;padding:4px 10px;background:var(--cream);border:1px solid var(--border);color:var(--muted)">Previa a la vía judicial</span>
@@ -1920,8 +1920,8 @@
       <div style="padding:20px;background:var(--cream);border:1px solid var(--border);border-left:3px solid var(--accent)">
         <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--accent);margin-bottom:8px">Art. 15 — Datos personales</div>
         <ul style="font-size:13px;line-height:2;color:var(--muted);padding-left:16px;margin:0">
-          <li>Datos especialmente protegidos (salud, ideología, religión…) → siempre denegado</li>
-          <li>Otros datos personales → ponderación caso a caso</li>
+          <li>Datos especialmente protegidos (salud, ideología, religión…)</li>
+          <li>Otros datos personales</li>
         </ul>
         <p style="font-size:12px;color:var(--muted);margin:8px 0 0;font-style:italic">Los límites deben aplicarse con "test de daño": solo si el perjuicio al bien protegido supera el interés público.</p>
       </div>
