@@ -148,6 +148,42 @@
   .hero h1 em { font-style: italic; color: #d4c9b8; }
   .hero p { font-size: 15px; color: #b8b0a4; max-width: 580px; line-height: 1.7; }
 
+  /* ── PAGE HERO (franjas por pestaña) ── */
+  .page-hero {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 48px 32px;
+    position: relative;
+    overflow: hidden;
+  }
+  .page-hero::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -60px;
+    width: 280px; height: 280px;
+    border-radius: 50%;
+    border: 56px solid rgba(192,57,43,0.10);
+    pointer-events: none;
+  }
+  .page-hero-inner { max-width: 900px; margin: 0 auto; }
+  .page-hero-tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 12px;
+  }
+  .page-hero h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(24px, 3.5vw, 40px);
+    font-weight: 900;
+    line-height: 1.1;
+    margin-bottom: 14px;
+  }
+  .page-hero h2 em { font-style: italic; color: #d4c9b8; }
+  .page-hero p { font-size: 15px; color: #b8b0a4; max-width: 600px; line-height: 1.7; margin: 0; }
+
   /* ── MAIN LAYOUT ── */
   .main {
     max-width: 1200px;
@@ -1234,6 +1270,7 @@
     .header-top { padding: 12px 16px; }
     nav { padding: 8px 12px; overflow-x: auto; white-space: nowrap; }
     .hero { padding: 28px 16px; }
+    .page-hero { padding: 28px 16px; }
     .form-row { grid-template-columns: 1fr; }
     .contacto-grid { grid-template-columns: 1fr; }
     .page-inner { padding: 0 16px 48px; }
@@ -1399,10 +1436,13 @@
 <div id="page-doctrina" class="page">
 <div class="doctrina-layout">
 
-  <div class="page-header">
-    <div class="eyebrow">· Base de datos · 27 resoluciones · CTBG · GAIP · KOAIK · Andalucía · Madrid · Valencia ·</div>
-    <h2>Doctrina de los consejos de transparencia</h2>
-    <p>Base de datos de resoluciones reales del CTBG y órganos autonómicos de garantía. Filtra por consejo, resultado, materia o palabras clave. Cada resolución incluye un resumen estructurado de las posiciones de la administración, el solicitante y el razonamiento del consejo.</p>
+  <div class="page-hero">
+    <div class="page-hero-inner">
+      <div class="page-hero-tag">· Base de datos · CTBG · GAIP · KOAIK · Consejos autonómicos ·</div>
+      <h2>Qué dicen los consejos.<br><em>Toda la doctrina, ordenada.</em></h2>
+      <p>Base de datos de resoluciones reales del CTBG y órganos autonómicos. Filtra por consejo, resultado, materia o palabras clave. Cada resolución incluye las posiciones de la administración, el solicitante y el razonamiento del consejo.</p>
+    </div>
+  </div>
   </div>
 
   <!-- Filtros -->
@@ -1493,10 +1533,12 @@
 <div id="page-redactar" class="page">
 <div class="page-inner" style="max-width:860px;margin:48px auto;padding:0 32px 64px">
 
-  <div class="page-header">
-    <div class="eyebrow">· Herramienta de IA ·</div>
-    <h2>Redactar documento</h2>
-    <p>Genera solicitudes de acceso a información pública o reclamaciones ante los consejos de transparencia, con argumentación basada en resoluciones reales del CTBG y órganos autonómicos de garantía.</p>
+  <div class="page-hero">
+    <div class="page-hero-inner">
+      <div class="page-hero-tag">· Herramienta de IA · Ley 19/2013 ·</div>
+      <h2>Escribe tu solicitud.<br><em>La IA conoce la doctrina.</em></h2>
+      <p>Genera solicitudes de acceso a información pública o reclamaciones ante los consejos de transparencia con argumentación basada en resoluciones reales del CTBG y órganos autonómicos de garantía.</p>
+    </div>
   </div>
 
   <!-- Selector de tipo de documento -->
@@ -1671,12 +1713,14 @@
      PAGE: PROPONER SOLICITUD
 ══════════════════════════════════════════ -->
 <div id="page-proponer" class="page">
-  <div class="page-inner">
-    <div class="page-header">
-      <div class="eyebrow">· Participa ·</div>
-      <h2>Propón qué pedir</h2>
-      <p>¿Hay algo que crees que debería ser público y no lo es? Cuéntanos qué quieres saber. Nosotras redactaremos la solicitud formal y te la devolvemos lista para presentar —y si quieres, también la tramitamos nosotras y publicamos el resultado aquí.</p>
+  <div class="page-hero">
+    <div class="page-hero-inner">
+      <div class="page-hero-tag">· Participa · Ciudadanía activa ·</div>
+      <h2>Propón lo que quieres saber.<br><em>Lo pedimos nosotras.</em></h2>
+      <p>¿Hay algo que crees que debería ser público y no lo es? Cuéntanos qué quieres saber. Redactaremos la solicitud formal y, si quieres, la tramitamos y publicamos el resultado aquí.</p>
     </div>
+  </div>
+  <div class="page-inner">
 
     <div class="form-row">
       <div class="form-group">
@@ -1769,10 +1813,12 @@
   <div class="page-inner">
 
     <!-- CABECERA -->
-    <div class="page-header">
-      <div class="eyebrow">· Sobre nosotros ·</div>
-      <h2>La transparencia en España, explicada</h2>
-      <p>Somos dos personas convencidas de que la información pública es un derecho, no un favor. Aquí documentamos cómo funciona el sistema y cómo ejercer ese derecho.</p>
+    <div class="page-hero">
+      <div class="page-hero-inner">
+        <div class="page-hero-tag">· Sobre nosotros · Ley 19/2013 ·</div>
+        <h2>Un derecho, no un favor.<br><em>Así funciona la transparencia en España.</em></h2>
+        <p>Somos dos personas convencidas de que la información pública pertenece a la ciudadanía. Aquí documentamos cómo funciona el sistema y cómo ejercer ese derecho.</p>
+      </div>
     </div>
 
     <!-- GUÍA: QUÉ ES LA LEY -->
@@ -2046,13 +2092,47 @@
 
 <script>
 // ── PAGE NAVIGATION ──
+const PAGE_SLUGS = {
+  resoluciones: 'resoluciones',
+  doctrina:     'doctrina',
+  redactar:     'redactar',
+  proponer:     'proponer',
+  contacto:     'sobre-nosotros',
+};
+const SLUG_TO_PAGE = Object.fromEntries(Object.entries(PAGE_SLUGS).map(([k,v]) => [v, k]));
+
 function showPage(name, el) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('page-' + name).classList.add('active');
   if (el) el.classList.add('active');
   window.scrollTo({ top: 0, behavior: 'smooth' });
+  // Actualizar URL con slug
+  const slug = PAGE_SLUGS[name] || name;
+  history.pushState({ page: name }, '', '#' + slug);
 }
+
+// Leer hash al cargar para navegación directa / compartir enlace
+(function initFromHash() {
+  const hash = window.location.hash.replace('#', '');
+  const page = SLUG_TO_PAGE[hash] || (hash && document.getElementById('page-' + hash) ? hash : null);
+  if (page) {
+    const btns = document.querySelectorAll('.nav-btn');
+    const pageOrder = ['resoluciones', 'doctrina', 'redactar', 'proponer', 'contacto'];
+    const idx = pageOrder.indexOf(page);
+    showPage(page, idx >= 0 ? btns[idx] : null);
+  }
+})();
+
+// Botón atrás/adelante del navegador
+window.addEventListener('popstate', function(e) {
+  if (e.state && e.state.page) {
+    const btns = document.querySelectorAll('.nav-btn');
+    const pageOrder = ['resoluciones', 'doctrina', 'redactar', 'proponer', 'contacto'];
+    const idx = pageOrder.indexOf(e.state.page);
+    showPage(e.state.page, idx >= 0 ? btns[idx] : null);
+  }
+});
 // ── MODAL DATA ──
 const resData = [];
 
