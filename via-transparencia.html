@@ -1592,7 +1592,7 @@
     <div class="form-group">
       <label>Consejo de transparencia ante el que recurrir <span class="req">*</span></label>
       <div class="consejo-grid">
-        <button class="consejo-chip active" onclick="selectConsejo(this, 'CTBG')" data-consejo="CTBG">Consejo Transparencia y Buen Gobierno<br>(Estatal)</button>
+        <button class="consejo-chip active" onclick="selectConsejo(this, 'CTBG')" data-consejo="CTBG">Consejo Transparencia y Buen Gobierno<br>(Estatal y aquellas CCAA que no cuentan con organismo propio)</button>
         <button class="consejo-chip" onclick="selectConsejo(this, 'Andalucía')" data-consejo="Andalucía">Comisionado Transp.<br>Andalucía</button>
         <button class="consejo-chip" onclick="selectConsejo(this, 'Aragón')" data-consejo="Aragón">Comisión Transp.<br>Aragón</button>
         <button class="consejo-chip" onclick="selectConsejo(this, 'Canarias')" data-consejo="Canarias">Comisionado Transp.<br>Canarias</button>
@@ -1829,7 +1829,7 @@
       <div style="background:var(--cream);padding:28px 24px;border:2px solid var(--border)">
         <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:12px">¿A quién afecta?</div>
         <div style="font-family:'Playfair Display',serif;font-size:22px;font-weight:700;line-height:1.2;margin-bottom:12px">Toda la administración</div>
-        <p style="font-size:13px;line-height:1.7;color:var(--muted)">Ministerios, ayuntamientos, comunidades autónomas, empresas públicas, universidades, partidos políticos con financiación pública y sindicatos.</p>
+        <p style="font-size:13px;line-height:1.7;color:var(--muted)">Ministerios, comunidades autónomas, ayuntamientos, empresas públicas, universidades...</p>
       </div>
       <div style="background:var(--cream);padding:28px 24px;border:2px solid var(--border)">
         <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:12px">¿Cuánto cuesta?</div>
@@ -1884,7 +1884,7 @@
         </div>
         <div style="padding:0 0 28px 0;flex:1">
           <div style="font-family:'Playfair Display',serif;font-size:18px;font-weight:700;margin-bottom:6px">Si te deniegan, puedes reclamar</div>
-          <p style="font-size:13px;line-height:1.7;color:var(--muted);margin-bottom:10px">Si la respuesta es negativa o no llega, tienes un mes para presentar una reclamación ante el consejo de transparencia competente: el CTBG (estatal) o el equivalente autonómico. Es gratuito, no necesitas abogado y tiene fuerza vinculante.</p>
+          <p style="font-size:13px;line-height:1.7;color:var(--muted);margin-bottom:10px">Si la respuesta es negativa o no llega, tienes un mes para presentar una reclamación ante el consejo de transparencia competente: el CTBG (estatal + Principado de Asturias, Illes Balears, Cantabria, Extremadura, La Rioja, Ceuta y Melilla) o el equivalente autonómico para Andalucía, Aragón, Canarias, Cataluña, Euskadi, Galicia, Comunidad de Madrid, Comunidad Valenciana. Es gratuito, no necesitas abogado y tiene fuerza vinculante.</p>
           <div style="display:flex;gap:8px;flex-wrap:wrap">
             <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1px;padding:4px 10px;background:var(--cream);border:1px solid var(--border);color:var(--muted)">Art. 24 Ley 19/2013</span>
             <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1px;padding:4px 10px;background:var(--cream);border:1px solid var(--border);color:var(--muted)">Previa a la vía judicial</span>
@@ -1941,7 +1941,7 @@
         <div style="font-size:12px;color:var(--muted);margin-top:6px;font-style:italic">Ampliable a 2 meses si el volumen lo justifica</div>
       </div>
       <div style="text-align:center;padding:28px 16px;background:var(--cream);border:2px solid var(--border)">
-        <div style="font-family:'Playfair Display',serif;font-size:40px;font-weight:900;color:var(--ink);line-height:1">3 m.</div>
+        <div style="font-family:'Playfair Display',serif;font-size:40px;font-weight:900;color:var(--ink);line-height:1">3 meses</div>
         <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-top:10px">Plazo resolución del consejo</div>
         <div style="font-size:12px;color:var(--muted);margin-top:6px;font-style:italic">Desde que se presenta la reclamación (art. 24)</div>
       </div>
@@ -1975,9 +1975,9 @@
       </div>
       <div style="padding:22px;background:white;border:2px solid var(--border)">
         <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--accent);margin-bottom:10px">✗ Mito</div>
-        <div style="font-family:'Playfair Display',serif;font-size:16px;font-weight:700;margin-bottom:8px">"Si no respondes en un mes, ya no puedes reclamar"</div>
+        <div style="font-family:'Playfair Display',serif;font-size:16px;font-weight:700;margin-bottom:8px">"Si no responden, ya no puedes reclamar"</div>
         <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:#2c6e49;margin-bottom:8px;margin-top:14px">✓ Realidad</div>
-        <p style="font-size:13px;line-height:1.7;color:var(--muted)">El silencio administrativo equivale a denegación, y puedes reclamar ante el consejo de transparencia igual que si te hubieran denegado expresamente.</p>
+        <p style="font-size:13px;line-height:1.7;color:var(--muted)">El silencio administrativo equivale a denegación, y puedes reclamar ante el Consejo de Transparencia igual que si te hubieran denegado expresamente (además, ante el silencio administrativo, no tienes el plazo de un mes para presentar la reclamación).</p>
       </div>
       <div style="padding:22px;background:white;border:2px solid var(--border)">
         <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--accent);margin-bottom:10px">✗ Mito</div>
@@ -1997,11 +1997,11 @@
     <div style="background:var(--ink);color:white;padding:32px;margin-bottom:48px;border:2px solid var(--ink)">
       <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.4);margin-bottom:12px">· Pendiente desde 2022 ·</div>
       <div style="font-family:'Playfair Display',serif;font-size:20px;font-weight:700;margin-bottom:12px;line-height:1.3">La Ley 19/2013 necesita una reforma que no llega</div>
-      <p style="font-size:13px;line-height:1.8;color:rgba(255,255,255,0.7);max-width:680px">El IV Plan de Gobierno Abierto anunció la reforma de la ley en 2022. En 2025, sigue sin aprobarse. Organizaciones como Transparency International España señalan que el CTBG carece de recursos suficientes, que los partidos políticos cumplen menos del 55% de sus obligaciones de publicidad activa y que varias comunidades autónomas han debilitado o eliminado sus agencias antifraude.</p>
+      <p style="font-size:13px;line-height:1.8;color:rgba(255,255,255,0.7);max-width:680px">El IV Plan de Gobierno Abierto anunció la reforma de la ley en 2022. En 2025, sigue sin aprobarse. Organizaciones como Transparency International España señalan que el CTBG carece de recursos suficientes, que los partidos políticos cumplen menos del 55% de sus obligaciones de publicidad activa y que varias comunidades autónomas han debilitado o eliminado sus agencias antifraude. Además, el CTBG no tiene capacidad sancionadora.</p>
     </div>
 
     <!-- NOSOTROS -->
-    <div class="section-label">· Este proyecto ·</div>
+    <div class="section-label">· Sobre este proyecto ·</div>
     <div class="sobre-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:48px">
       <div style="padding:28px;background:var(--cream);border:2px solid var(--border)">
         <div style="font-family:'Playfair Display',serif;font-size:18px;font-weight:700;margin-bottom:12px">Quiénes somos</div>
