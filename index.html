@@ -2123,7 +2123,12 @@ function showPage(name, el) {
   const slug = PAGE_SLUGS[name] || name;
   history.pushState({ page: name }, '', '#' + slug);
 }
-
+function navSelectChange(name) {
+  const btns = document.querySelectorAll('.nav-btn');
+  const pageOrder = ['resoluciones', 'doctrina', 'redactar', 'proponer', 'contacto'];
+  const idx = pageOrder.indexOf(name);
+  showPage(name, idx >= 0 ? btns[idx] : null);
+}
 // Leer hash al cargar para navegación directa / compartir enlace
 window.addEventListener('DOMContentLoaded', function initFromHash() {
   const hash = window.location.hash.replace('#', '');
