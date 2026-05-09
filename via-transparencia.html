@@ -2248,7 +2248,7 @@ Responde SOLO con el texto de la solicitud, sin explicaciones previas ni posteri
         email: email,
         autorizacion: auth,
       });
-      fetch('/', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: payload.toString() })
+      fetch('https://api.web3forms.com/submit', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ access_key: '55f09259-cae2-49b1-9458-41dab12ccd2a', subject: 'Nueva propuesta de solicitud — vía Transparencia', organismo: payload.get('organismo'), tema: payload.get('tema'), descripcion: payload.get('descripcion'), contexto: payload.get('contexto'), email: payload.get('email'), autorizacion: payload.get('autorizacion') }) })
         .catch(() => {}); // silencioso — no bloqueamos la UX
       if (email) document.getElementById('confirm-box').classList.add('show');
     }
@@ -2277,10 +2277,10 @@ function copiarTexto() {
 function handleContactoSubmit(e) {
   e.preventDefault();
   const form = e.target;
-  fetch('/', {
+  fetch('https://api.web3forms.com/submit', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams(new FormData(form)).toString()
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ access_key: '55f09259-cae2-49b1-9458-41dab12ccd2a', subject: 'Contacto — vía Transparencia', ...Object.fromEntries(new FormData(form)) })
   })
   .then(() => {
     form.style.display = 'none';
