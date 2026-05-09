@@ -105,6 +105,7 @@
     gap: 6px;
   }
   nav .nav-cta:hover { opacity: 0.88; background: var(--tg); }
+  nav .nav-select-wrap { display: none; } /* visible solo en móvil */
 
   /* ── PAGES ── */
   .page { display: none; }
@@ -2117,17 +2118,14 @@ function showPage(name, el) {
   document.getElementById('page-' + name).classList.add('active');
   if (el) el.classList.add('active');
   const sel = document.getElementById('nav-select-mobile');
-if (sel) sel.value = name;
-  const sel = document.getElementById('nav-select-mobile');
-if (sel) sel.value = name;
+  if (sel) sel.value = name;
   window.scrollTo({ top: 0, behavior: 'smooth' });
-  // Actualizar URL con slug
   const slug = PAGE_SLUGS[name] || name;
   history.pushState({ page: name }, '', '#' + slug);
 }
 
 // Leer hash al cargar para navegación directa / compartir enlace
-(function initFromHash() {
+window.addEventListener('DOMContentLoaded', function initFromHash() {
   const hash = window.location.hash.replace('#', '');
   const page = SLUG_TO_PAGE[hash] || (hash && document.getElementById('page-' + hash) ? hash : null);
   if (page) {
@@ -2136,7 +2134,7 @@ if (sel) sel.value = name;
     const idx = pageOrder.indexOf(page);
     showPage(page, idx >= 0 ? btns[idx] : null);
   }
-})();
+});
 
 // Botón atrás/adelante del navegador
 window.addEventListener('popstate', function(e) {
