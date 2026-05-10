@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>vía Transparencia · Proceso por lotes</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=IBM+Plex+Mono:wght@400;500&family=Libre+Franklin:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0f0e0d; --paper: #f5f1ea; --cream: #ede8df;
+    --accent: #c0392b; --green: #2c6e49; --muted: #7a7670; --border: #c8c2b8;
+    --tg: #229ED9;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--paper); color: var(--ink); font-family: 'Libre Franklin', sans-serif; font-size: 14px; line-height: 1.6; }
+
+  header { background: var(--ink); padding: 14px 32px; display: flex; align-items: center; justify-content: space-between; border-bottom: 3px solid var(--accent); }
+  .logo { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 900; color: white; }
+  .logo em { font-style: italic; color: var(--accent); }
+  .badge { font-family: 'IBM Plex Mono', monospace; font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: rgba(255,255,255,0.4); border: 1px solid rgba(255,255,255,0.15); padding: 4px 10px; }
+
+  .main { max-width: 960px; margin: 0 auto; padding: 32px 24px; display: flex; flex-direction: column; gap: 24px; }
+
+  .card { background: white; border: 1.5px solid var(--border); }
+  .card-head { background: var(--ink); color: white; padding: 12px 20px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; display: flex; align-items: center; justify-content: space-between; }
+  .card-body { padding: 20px; }
+
+  /* Drop zone */
+  .drop-zone { border: 2px dashed var(--border); padding: 36px; text-align: center; cursor: pointer; transition: all 0.2s; position: relative; }
+  .drop-zone:hover, .drop-zone.dragover { border-color: var(--ink); background: var(--cream); }
+  .drop-zone input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+  .drop-zone.loaded { border-color: var(--green); border-style: solid; background: #f0faf4; }
+  .dz-icon { font-size: 36px; margin-bottom: 8px; }
+  .dz-title { font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--ink); margin-bottom: 4px; }
+  .dz-sub { font-size: 12px; color: var(--muted); }
+
+  /* Selección de años */
+  .years-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .year-btn {
+    padding: 10px; text-align: center; border: 1.5px solid var(--border);
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px; cursor: pointer;
+    background: white; transition: all 0.15s; user-select: none;
+  }
+  .year-btn:hover { border-color: var(--ink); }
+  .year-btn.selected { background: var(--ink); color: white; border-color: var(--ink); }
+  .year-btn.selected .year-count { color: rgba(255,255,255,0.6); }
+  .year-count { font-size: 10px; color: var(--muted); display: block; margin-top: 2px; }
+
+  /* Stats resumen */
+  .stats-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; }
+  .stat { text-align: center; padding: 16px; background: var(--cream); border: 1px solid var(--border); }
+  .stat-num { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 900; color: var(--ink); line-height: 1; }
+  .stat-num.accent { color: var(--accent); }
+  .stat-num.green { color: var(--green); }
+  .stat-label { font-family: 'IBM Plex Mono', monospace; font-size: 9px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); margin-top: 6px; }
+
+  /* Barra de progreso */
+  .progress-wrap { background: var(--cream); border: 1.5px solid var(--border); padding: 16px 20px; }
+  .progress-bar-bg { background: var(--border); height: 8px; border-radius: 0; overflow: hidden; margin: 10px 0; }
+  .progress-bar-fill { height: 100%; background: var(--green); transition: width 0.4s; width: 0%; }
+  .progress-bar-fill.error { background: var(--accent); }
+  .progress-text { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--muted); display: flex; justify-content: space-between; }
+
+  /* Log en tiempo real */
+  .log { background: #1a1a1a; color: #e8e3d8; font-family: 'IBM Plex Mono', monospace; font-size: 11px; line-height: 1.8; padding: 16px; height: 220px; overflow-y: auto; }
+  .log-line { display: flex; gap: 12px; }
+  .log-line .ts { color: #666; flex-shrink: 0; }
+  .log-line .msg { }
+  .log-line.ok .msg { color: #5cb85c; }
+  .log-line.err .msg { color: #e74c3c; }
+  .log-line.info .msg { color: #5b9bd5; }
+  .log-line.warn .msg { color: #f0ad4e; }
+
+  /* Botones */
+  .btn-row { display: flex; gap: 8px; }
+  .btn {
+    padding: 12px 24px; border: none; cursor: pointer; font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px; letter-spacing: 2px; text-transform: uppercase; transition: opacity 0.15s;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .btn:disabled { opacity: 0.35; cursor: not-allowed; }
+  .btn-start { background: var(--green); color: white; }
+  .btn-pause { background: #e67e22; color: white; }
+  .btn-download { background: var(--ink); color: white; }
+  .btn-reset { background: transparent; color: var(--muted); border: 1.5px solid var(--border); }
+  .btn:hover:not(:disabled) { opacity: 0.85; }
+
+  .hint { font-size: 12px; color: var(--muted); background: var(--cream); padding: 10px 14px; border-left: 3px solid var(--border); line-height: 1.6; }
+  .hint strong { color: var(--ink); }
+
+  /* Error items */
+  .errores-wrap { max-height: 160px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; }
+  .error-item { font-size: 12px; padding: 6px 10px; background: #fde8e6; border-left: 2px solid var(--accent); color: var(--accent); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo"><em>vía</em> Transparencia</div>
+  <div class="badge">· Proceso por lotes ·</div>
+</header>
+
+<div class="main">
+
+  <!-- PASO 1: Excel -->
+  <div class="card">
+    <div class="card-head">
+      <span>1 · Sube el Excel de resoluciones</span>
+      <span id="excel-badge" style="color:rgba(255,255,255,0.4)">Sin cargar</span>
+    </div>
+    <div class="card-body" style="display:flex;flex-direction:column;gap:16px">
+      <div class="drop-zone" id="drop-excel">
+        <input type="file" id="excel-input" accept=".xlsx,.xls" onchange="cargarExcel(this.files[0])">
+        <div class="dz-icon">📊</div>
+        <div class="dz-title">Arrastra el Excel aquí o haz clic para seleccionarlo</div>
+        <div class="dz-sub" id="excel-sub">ResolucionesAE.xlsx</div>
+      </div>
+      <div class="hint">El Excel debe tener las resoluciones en la columna A con hiperenlaces a los PDFs del CTBG. Hojas compatibles: 2019–2026.</div>
+    </div>
+  </div>
+
+  <!-- PASO 2: Selección de años -->
+  <div class="card" id="card-years" style="display:none">
+    <div class="card-head">
+      <span>2 · Selecciona los años a procesar</span>
+      <span id="total-sel-badge" style="color:rgba(255,255,255,0.5)">0 resoluciones</span>
+    </div>
+    <div class="card-body" style="display:flex;flex-direction:column;gap:16px">
+      <div class="years-grid" id="years-grid"></div>
+      <div class="hint">
+        <strong>Tiempo estimado:</strong> <span id="tiempo-estimado">—</span> · Gemini gratuito: 15 peticiones/min · El proceso guarda el avance automáticamente, puedes pausarlo y reanudarlo.
+      </div>
+    </div>
+  </div>
+
+  <!-- PASO 3: Control -->
+  <div class="card" id="card-control" style="display:none">
+    <div class="card-head"><span>3 · Proceso</span></div>
+    <div class="card-body" style="display:flex;flex-direction:column;gap:16px">
+
+      <div class="stats-row">
+        <div class="stat">
+          <div class="stat-num" id="stat-total">0</div>
+          <div class="stat-label">Total</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num green" id="stat-ok">0</div>
+          <div class="stat-label">Procesadas</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num accent" id="stat-err">0</div>
+          <div class="stat-label">Errores</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num" id="stat-resto">0</div>
+          <div class="stat-label">Pendientes</div>
+        </div>
+      </div>
+
+      <div class="progress-wrap">
+        <div class="progress-text">
+          <span id="prog-label">Listo para iniciar</span>
+          <span id="prog-pct">0%</span>
+        </div>
+        <div class="progress-bar-bg"><div class="progress-bar-fill" id="prog-bar"></div></div>
+        <div class="progress-text">
+          <span id="prog-actual">—</span>
+          <span id="prog-eta">—</span>
+        </div>
+      </div>
+
+      <div class="log" id="log"></div>
+
+      <div class="btn-row">
+        <button class="btn btn-start" id="btn-start" onclick="iniciarProceso()">▶ Iniciar proceso</button>
+        <button class="btn btn-pause" id="btn-pause" onclick="pausarProceso()" disabled>⏸ Pausar</button>
+        <button class="btn btn-download" id="btn-download" onclick="descargarJSON()" disabled>↓ Descargar JSON</button>
+        <button class="btn btn-reset" onclick="resetear()">↺ Reiniciar</button>
+      </div>
+
+      <div id="errores-section" style="display:none">
+        <div class="card-head" style="background:var(--accent);margin-bottom:8px"><span>Resoluciones con error (se pueden reintentar)</span></div>
+        <div class="errores-wrap" id="errores-list"></div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<script>
+const WORKER_URL = 'https://ai.viatransparencia.workers.dev';
+const STORAGE_KEY = 'vt_lotes_progreso';
+const DELAY_MS = 4200; // ~14 req/min, por debajo del límite de 15
+
+let excelData = {};      // { año: [{ref, url}] }
+let cola = [];           // [{ref, url, año}] pendientes
+let resultados = [];     // [{...campos extraídos}]
+let errores = [];        // [{ref, url, error}]
+let procesando = false;
+let pausado = false;
+let timerActual = null;
+
+// ── Cargar Excel ──
+async function cargarExcel(file) {
+  if (!file) return;
+  log('info', `Cargando ${file.name}...`);
+
+  const buffer = await file.arrayBuffer();
+  const wb = XLSX.read(buffer, { type: 'array' });
+
+  const HOJAS_VALIDAS = ['2026','2025','2024','2023','2022','2021','2020','2019'];
+  excelData = {};
+
+  for (const hoja of HOJAS_VALIDAS) {
+    if (!wb.SheetNames.includes(hoja)) continue;
+    const ws = wb.Sheets[hoja];
+    const items = [];
+
+    // Iterar filas buscando hiperenlaces en col A
+    const range = XLSX.utils.decode_range(ws['!ref'] || 'A1');
+    for (let r = 1; r <= range.e.r; r++) {
+      const cell = ws[XLSX.utils.encode_cell({ r, c: 0 })];
+      if (!cell) continue;
+      // SheetJS guarda el hiperenlace en cell.l.Target
+      const url = cell.l?.Target;
+      const ref = cell.v ? String(cell.v).trim() : null;
+      if (url && ref && url.includes('.pdf')) {
+        items.push({ ref, url, año: hoja });
+      }
+    }
+    if (items.length) excelData[hoja] = items;
+  }
+
+  const totalEncontrado = Object.values(excelData).reduce((s,v) => s + v.length, 0);
+  if (totalEncontrado === 0) {
+    log('err', 'No se encontraron URLs en el Excel. Comprueba que los hiperenlaces están en la columna A.');
+    return;
+  }
+
+  log('ok', `Excel cargado: ${totalEncontrado} resoluciones en ${Object.keys(excelData).length} hojas`);
+  document.getElementById('drop-excel').classList.add('loaded');
+  document.getElementById('drop-excel').querySelector('.dz-icon').textContent = '✅';
+  document.getElementById('excel-sub').textContent = `${file.name} · ${totalEncontrado} resoluciones`;
+  document.getElementById('excel-badge').textContent = `${totalEncontrado} resoluciones`;
+
+  // Recuperar progreso guardado
+  cargarProgreso();
+  renderYears();
+  document.getElementById('card-years').style.display = 'block';
+}
+
+// Drag & drop Excel
+document.getElementById('drop-excel').addEventListener('dragover', e => { e.preventDefault(); e.currentTarget.classList.add('dragover'); });
+document.getElementById('drop-excel').addEventListener('dragleave', e => e.currentTarget.classList.remove('dragover'));
+document.getElementById('drop-excel').addEventListener('drop', e => {
+  e.preventDefault();
+  e.currentTarget.classList.remove('dragover');
+  cargarExcel(e.dataTransfer.files[0]);
+});
+
+// ── Render años ──
+function renderYears() {
+  const grid = document.getElementById('years-grid');
+  grid.innerHTML = '';
+  const seleccionados = JSON.parse(localStorage.getItem('vt_years_sel') || '[]');
+
+  for (const [año, items] of Object.entries(excelData)) {
+    const procesadasDeEsteAño = resultados.filter(r => r.año === año).length;
+    const btn = document.createElement('div');
+    btn.className = 'year-btn' + (seleccionados.includes(año) ? ' selected' : '');
+    btn.dataset.year = año;
+    btn.innerHTML = `${año}<span class="year-count">${items.length} resoluciones${procesadasDeEsteAño ? ` · ${procesadasDeEsteAño} hechas` : ''}</span>`;
+    btn.onclick = () => toggleYear(año, btn);
+    grid.appendChild(btn);
+  }
+  actualizarTotalSel();
+}
+
+function toggleYear(año, btn) {
+  btn.classList.toggle('selected');
+  const sel = [...document.querySelectorAll('.year-btn.selected')].map(b => b.dataset.year);
+  localStorage.setItem('vt_years_sel', JSON.stringify(sel));
+  actualizarTotalSel();
+}
+
+function actualizarTotalSel() {
+  const sel = [...document.querySelectorAll('.year-btn.selected')].map(b => b.dataset.year);
+  const total = sel.reduce((s, a) => s + (excelData[a]?.length || 0), 0);
+  document.getElementById('total-sel-badge').textContent = `${total} resoluciones`;
+  const mins = Math.ceil(total * DELAY_MS / 1000 / 60);
+  const horas = Math.floor(mins / 60);
+  const minResto = mins % 60;
+  document.getElementById('tiempo-estimado').textContent = horas > 0 ? `~${horas}h ${minResto}min` : `~${mins} min`;
+  if (total > 0) document.getElementById('card-control').style.display = 'block';
+}
+
+// ── Progreso persistente ──
+function guardarProgreso() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({ resultados, errores }));
+}
+
+function cargarProgreso() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    const { resultados: r, errores: e } = JSON.parse(saved);
+    resultados = r || [];
+    errores = e || [];
+    if (resultados.length > 0) {
+      log('info', `Progreso recuperado: ${resultados.length} resoluciones procesadas anteriormente`);
+    }
+  }
+}
+
+// ── Proceso principal ──
+async function iniciarProceso() {
+  const sel = [...document.querySelectorAll('.year-btn.selected')].map(b => b.dataset.year);
+  if (sel.length === 0) { log('warn', 'Selecciona al menos un año'); return; }
+
+  // Construir cola (excluyendo ya procesadas)
+  const yaHechas = new Set(resultados.map(r => r.referencia));
+  cola = [];
+  for (const año of sel) {
+    for (const item of (excelData[año] || [])) {
+      if (!yaHechas.has(item.ref)) cola.push(item);
+    }
+  }
+
+  if (cola.length === 0) {
+    log('ok', 'Todas las resoluciones seleccionadas ya están procesadas. Descarga el JSON.');
+    document.getElementById('btn-download').disabled = false;
+    return;
+  }
+
+  log('info', `Iniciando: ${cola.length} resoluciones pendientes`);
+  procesando = true;
+  pausado = false;
+  document.getElementById('btn-start').disabled = true;
+  document.getElementById('btn-pause').disabled = false;
+  document.getElementById('btn-download').disabled = false;
+
+  actualizarStats();
+  await procesarCola();
+}
+
+async function procesarCola() {
+  const total = cola.length + resultados.length + errores.length;
+
+  while (cola.length > 0 && procesando && !pausado) {
+    const item = cola.shift();
+    actualizarStats();
+
+    const idx = resultados.length + errores.length + 1;
+    log('info', `[${idx}/${total}] ${item.ref}`);
+    document.getElementById('prog-actual').textContent = item.ref;
+
+    try {
+      const resultado = await procesarResolucion(item);
+      resultados.push(resultado);
+      log('ok', `✓ ${item.ref} → ${resultado.fallo}`);
+    } catch (err) {
+      errores.push({ ...item, error: err.message });
+      log('err', `✗ ${item.ref} → ${err.message.substring(0, 60)}`);
+      mostrarErrorItem(item.ref, err.message);
+    }
+
+    guardarProgreso();
+    actualizarStats();
+    renderYears();
+
+    // Esperar antes de la siguiente petición (rate limit Gemini)
+    if (cola.length > 0 && !pausado) {
+      await esperar(DELAY_MS);
+    }
+  }
+
+  if (!pausado) {
+    procesando = false;
+    document.getElementById('btn-start').disabled = false;
+    document.getElementById('btn-pause').disabled = true;
+    log('ok', `🏁 Proceso completado. ${resultados.length} extraídas, ${errores.length} errores.`);
+    document.getElementById('prog-label').textContent = 'Completado';
+  }
+}
+
+async function procesarResolucion(item) {
+  // 1. Descargar PDF via Worker (evita CORS)
+  const pdfRes = await fetch(WORKER_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ mode: 'fetch_pdf', url: item.url })
+  });
+  if (!pdfRes.ok) throw new Error(`Error descargando PDF: ${pdfRes.status}`);
+  const pdfData = await pdfRes.json();
+  if (pdfData.error) throw new Error(pdfData.error);
+
+  // 2. Extraer texto con PDF.js
+  const pdfBytes = Uint8Array.from(atob(pdfData.pdf_base64), c => c.charCodeAt(0));
+  const pdf = await pdfjsLib.getDocument({ data: pdfBytes }).promise;
+  let texto = '';
+  for (let i = 1; i <= Math.min(pdf.numPages, 15); i++) {
+    const page = await pdf.getPage(i);
+    const tc = await page.getTextContent();
+    texto += tc.items.map(x => x.str).join(' ') + '\n';
+  }
+  if (texto.trim().length < 100) throw new Error('PDF sin texto extraíble (puede ser imagen escaneada)');
+
+  // 3. Enviar a IA
+  const prompt = `Eres un experto en derecho de acceso a la información pública española (Ley 19/2013).
+Analiza esta resolución del CTBG y extrae la información.
+
+TEXTO:
+${texto.substring(0, 12000)}
+
+Devuelve ÚNICAMENTE este JSON sin texto adicional ni bloques de código:
+{
+  "referencia": "${item.ref}",
+  "fecha": "DD/MM/YYYY",
+  "fallo": "estimada|desestimada|parcial|silencio",
+  "organismo": "nombre del organismo recurrido",
+  "titulo": "descripción breve 10-15 palabras de qué información se solicitó",
+  "materia": "contratación|subvenciones|personal|medio ambiente|urbanismo|sanidad|educación|datos personales|silencio administrativo|expediente en tramitación|seguridad|secreto profesional|otros",
+  "resumen": "2-3 frases en lenguaje ciudadano: qué se pidió, por qué lo denegaron y qué decidió el consejo",
+  "administracion": ["argumento concreto mínimo 20 palabras que usó la administración"],
+  "solicitante": ["argumento concreto mínimo 20 palabras que usó el reclamante"],
+  "consejo_razonamiento": ["razonamiento jurídico concreto del consejo citando artículos"]
+}
+
+REGLAS: frases completas y autónomas, nunca genéricas. 2-4 elementos por array. fallo exactamente una de las 4 opciones.`;
+
+  const aiRes = await fetch(WORKER_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ prompt, max_tokens: 1500 })
+  });
+  if (!aiRes.ok) throw new Error(`Error IA: ${aiRes.status}`);
+  const aiData = await aiRes.json();
+  if (aiData.error) throw new Error(aiData.error);
+
+  let jsonStr = aiData.texto.trim().replace(/```json\n?/g,'').replace(/```\n?/g,'').trim();
+  const parsed = JSON.parse(jsonStr);
+  parsed.año = item.año;
+  parsed.url = item.url;
+  parsed.consejo = 'CTBG';
+  parsed.anio = parseInt(item.año);
+  return parsed;
+}
+
+// ── Pausar/Reanudar ──
+function pausarProceso() {
+  if (pausado) {
+    pausado = false;
+    document.getElementById('btn-pause').textContent = '⏸ Pausar';
+    log('info', 'Reanudando...');
+    procesarCola();
+  } else {
+    pausado = true;
+    document.getElementById('btn-pause').textContent = '▶ Reanudar';
+    document.getElementById('btn-start').disabled = false;
+    log('warn', 'Pausado. Pulsa Reanudar para continuar.');
+  }
+}
+
+// ── Descargar JSON ──
+function descargarJSON() {
+  if (resultados.length === 0) { log('warn', 'No hay resultados aún'); return; }
+  const blob = new Blob([JSON.stringify(resultados, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `resoluciones_lotes_${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  log('ok', `Descargado JSON con ${resultados.length} resoluciones`);
+}
+
+// ── UI helpers ──
+function actualizarStats() {
+  const sel = [...document.querySelectorAll('.year-btn.selected')].map(b => b.dataset.year);
+  const totalSel = sel.reduce((s,a) => s + (excelData[a]?.length || 0), 0);
+  const ok = resultados.filter(r => sel.includes(r.año)).length;
+  const err = errores.filter(r => sel.includes(r.año)).length;
+  const pct = totalSel > 0 ? Math.round((ok + err) / totalSel * 100) : 0;
+
+  document.getElementById('stat-total').textContent = totalSel;
+  document.getElementById('stat-ok').textContent = ok;
+  document.getElementById('stat-err').textContent = err;
+  document.getElementById('stat-resto').textContent = cola.length;
+  document.getElementById('prog-bar').style.width = pct + '%';
+  document.getElementById('prog-pct').textContent = pct + '%';
+  document.getElementById('prog-label').textContent = procesando ? 'Procesando...' : 'En espera';
+
+  if (ok > 0 && procesando) {
+    const pendientes = cola.length;
+    const secsRestantes = pendientes * (DELAY_MS / 1000);
+    const minsR = Math.ceil(secsRestantes / 60);
+    const hR = Math.floor(minsR / 60);
+    document.getElementById('prog-eta').textContent = hR > 0 ? `~${hR}h ${minsR%60}min restantes` : `~${minsR} min restantes`;
+  }
+}
+
+function mostrarErrorItem(ref, msg) {
+  const sec = document.getElementById('errores-section');
+  sec.style.display = 'block';
+  const div = document.createElement('div');
+  div.className = 'error-item';
+  div.textContent = `${ref}: ${msg.substring(0,80)}`;
+  document.getElementById('errores-list').appendChild(div);
+}
+
+function log(tipo, msg) {
+  const logEl = document.getElementById('log');
+  const ts = new Date().toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  const line = document.createElement('div');
+  line.className = `log-line ${tipo}`;
+  line.innerHTML = `<span class="ts">${ts}</span><span class="msg">${msg}</span>`;
+  logEl.appendChild(line);
+  logEl.scrollTop = logEl.scrollHeight;
+}
+
+function esperar(ms) {
+  return new Promise(resolve => { timerActual = setTimeout(resolve, ms); });
+}
+
+function resetear() {
+  if (procesando && !pausado) { log('warn', 'Pausa primero el proceso antes de reiniciar'); return; }
+  if (!confirm('¿Borrar todo el progreso guardado? Esta acción no se puede deshacer.')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  localStorage.removeItem('vt_years_sel');
+  resultados = [];
+  errores = [];
+  cola = [];
+  procesando = false;
+  pausado = false;
+  document.getElementById('log').innerHTML = '';
+  document.getElementById('errores-list').innerHTML = '';
+  document.getElementById('errores-section').style.display = 'none';
+  document.getElementById('card-years').style.display = 'none';
+  document.getElementById('card-control').style.display = 'none';
+  document.getElementById('drop-excel').classList.remove('loaded');
+  document.getElementById('drop-excel').querySelector('.dz-icon').textContent = '📊';
+  document.getElementById('excel-sub').textContent = 'ResolucionesAE.xlsx';
+  document.getElementById('btn-pause').textContent = '⏸ Pausar';
+  document.getElementById('btn-start').disabled = false;
+  document.getElementById('btn-pause').disabled = true;
+  document.getElementById('btn-download').disabled = true;
+  log('info', 'Reiniciado. Sube el Excel de nuevo para empezar.');
+}
+</script>
+</body>
+</html>
