@@ -1224,7 +1224,18 @@
     text-transform: uppercase;
   }
   .res-link:hover { text-decoration: underline; }
-
+.res-link-directo {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-decoration: none;
+  padding: 4px 0;
+  border-bottom: 1px dashed var(--border);
+  transition: color 0.15s, border-color 0.15s;
+}
+.res-link-directo:hover { color: var(--ink); border-color: var(--ink); }
   .res-usar-btn {
     margin-left: auto;
     font-family: 'IBM Plex Mono', monospace;
@@ -2133,6 +2144,22 @@ function navSelectChange(name) {
 window.addEventListener('DOMContentLoaded', function initFromHash() {
   const hash = window.location.hash.replace('#', '');
   const page = SLUG_TO_PAGE[hash] || (hash && document.getElementById('page-' + hash) ? hash : null);
+  // Enlace directo a resolución: #resolucion/R-1338-2024
+if (hash.startsWith('resolucion/')) {
+  const ref = hash.replace('resolucion/', '').replace(/-/g, '/');
+  showPage('doctrina', document.querySelectorAll('.nav-btn')[1]);
+  // Esperar a que cargue la BD y buscar
+  const buscar = setInterval(() => {
+    if (window.DB_CARGADA) {
+      clearInterval(buscar);
+      const idx = RESOLUCIONES_DB.findIndex(r => r.referencia?.replace(/\s/g,'') === ref.replace(/\s/g,''));
+      if (idx >= 0) {
+        document.getElementById('d-query').value = RESOLUCIONES_DB[idx].referencia;
+        buscarDoctrina();
+      }
+    }
+  }, 300);
+}
   if (page) {
     const btns = document.querySelectorAll('.nav-btn');
     const pageOrder = ['resoluciones', 'doctrina', 'redactar', 'proponer', 'contacto'];
@@ -2665,7 +2692,11 @@ function renderDoctrina(data) {
       : `<span class="res-link" style="color:var(--muted);cursor:default">Sin URL directa</span>`;
 
     const globalIdx = r._gi ?? 0;
-
+const slug = (r.referencia || '').replace(/\//g, '-').replace(/\s/g, '');
+const urlDirecta = `${window.location.origin}${window.location.pathname}#resolucion/${slug}`;
+const substackLink = r.substack_url
+  ? `<a href="${r.substack_url}" target="_blank" class="res-usar-btn" style="background:var(--accent)">Leer artículo →</a>`
+  : '';
     return `
       <div class="res-card">
         <div class="res-card-head">
@@ -2705,7 +2736,9 @@ function renderDoctrina(data) {
         </div>
         <div class="res-footer">
           ${urlLink}
-          <button class="res-usar-btn" onclick="usarEnReclamacion(${globalIdx})">Usar como precedente →</button>
+         <a class="res-link-directo" href="${urlDirecta}" onclick="event.preventDefault();navigator.clipboard.writeText('${urlDirecta}').then(()=>alert('Enlace copiado'))">🔗 Copiar enlace</a>
+${substackLink}
+<button class="res-usar-btn" onclick="usarEnReclamacion(${globalIdx})">Usar como precedente →</button>
         </div>
       </div>`;
   }).join('');
