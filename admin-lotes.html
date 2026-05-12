@@ -436,9 +436,8 @@ REGLAS: frases completas y autónomas, nunca genéricas. 2-4 elementos por array
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ prompt, max_tokens: 1500 })
   });
-  if (!aiRes.ok) throw new Error(`Error IA: ${aiRes.status}`);
   const aiData = await aiRes.json();
-  if (aiData.error) throw new Error(aiData.error);
+if (!aiRes.ok || aiData.error) throw new Error(aiData.error || `Error IA: ${aiRes.status}`);
 
   let jsonStr = aiData.texto.trim().replace(/```json\n?/g,'').replace(/```\n?/g,'').trim();
   const parsed = JSON.parse(jsonStr);
