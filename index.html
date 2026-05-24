@@ -2503,7 +2503,7 @@ Responde SOLO con el texto de la reclamación, sin explicaciones previas ni post
       body: JSON.stringify({ prompt, max_tokens: 1500 })
     });
     const data = await response.json();
-    data.texto || 'Error al generar el documento. Por favor, inténtalo de nuevo.';
+    const texto = data.texto || 'Error al generar el documento. Por favor, inténtalo de nuevo.';
 
     document.getElementById('r-resultado-title').textContent = tituloDoc;
     document.getElementById('r-doc-texto').textContent = texto;
