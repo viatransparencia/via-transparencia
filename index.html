@@ -1735,6 +1735,9 @@
       <p style="font-size:12px;color:#6d4c00;line-height:1.6" id="r-nota-texto"></p>
     </div>
     <div id="r-doc-texto" style="padding:28px 32px;background:white;font-size:14px;line-height:1.8;color:#0f0e0d;white-space:pre-wrap;font-family:'Libre Franklin',sans-serif;min-height:80px"></div>
+    <div id="r-aviso-ia" style="display:none;padding:12px 20px;background:#fdf8f0;border-top:1.5px solid #e8dcc8;font-size:12px;color:var(--muted);line-height:1.6">
+      ⚠ Este documento ha sido generado con IA a partir de lo que has rellenado. Revisa el contenido antes de enviarlo — puede contener errores o imprecisiones.
+    </div>
     <div class="resultado-footer">
       <button class="btn-copy" onclick="copiarRedaccion()">📋 Copiar texto</button>
       <a href="https://t.me/+4h4LNTUOAY8yMzM0" target="_blank" class="btn-secondary-outline">Canal Telegram</a>
@@ -2421,7 +2424,7 @@ async function generarDocumento(tipo) {
     document.getElementById('btn-gen-sol').disabled = true;
     document.getElementById('r-generating-msg').innerHTML = '<strong>Redactando solicitud…</strong>Aplicando el lenguaje formal de la Ley 19/2013.';
     tituloDoc = 'Solicitud de acceso a información pública';
-    dondePresentar = '<div style="font-size:12px;color:var(--muted);background:var(--cream);border-left:3px solid var(--border);padding:10px 14px;margin-bottom:12px;line-height:1.5">⚠ Este documento ha sido generado con IA a partir de lo que has rellenado. Revisa el contenido antes de enviarlo — puede contener errores o imprecisiones.</div>Presenta este escrito en la sede electrónica del organismo o en el <a href="https://transparencia.gob.es" target="_blank" style="color:var(--accent)">Portal de Transparencia</a>.';
+    dondePresentar = 'Presenta este escrito en la sede electrónica del organismo o en el <a href="https://transparencia.gob.es" target="_blank" style="color:var(--accent)">Portal de Transparencia</a>.';
     // Construir párrafo de formato si se seleccionó
     const formatoTexto = formato === 'excel' ? 'tipo base de datos (.csv, .xls o .xlsx)' : formato === 'electronico' ? 'electrónico reutilizable' : formato === 'pdf' ? 'PDF' : formato === 'papel' ? 'papel o copia certificada' : '';
     const formatoParrafo = (formato === 'excel' || formato === 'electronico') ? '\n\nLes agradecería si pudieran remitir la información en un formato accesible ' + formatoTexto + '.' : formatoTexto ? '\n\nLes agradecería si pudieran remitir la información en formato ' + formatoTexto + '.' : '';
@@ -2529,6 +2532,7 @@ Responde SOLO con el texto de la reclamación, sin explicaciones previas ni post
       notaEl.style.display = 'none';
     }
 
+    document.getElementById('r-aviso-ia').style.display = tipo === 'solicitud' ? 'block' : 'none';
     document.getElementById('r-resultado').style.display = 'block';
     document.getElementById('r-resultado').scrollIntoView({ behavior: 'smooth', block: 'start' });
   } catch (err) {
