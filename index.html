@@ -2422,24 +2422,37 @@ async function generarDocumento(tipo) {
     document.getElementById('r-generating-msg').innerHTML = '<strong>Redactando solicitud…</strong>Aplicando el lenguaje formal de la Ley 19/2013.';
     tituloDoc = 'Solicitud de acceso a información pública';
     dondePresentar = 'Presenta este escrito en la sede electrónica del organismo o en el <a href="https://transparencia.gob.es" target="_blank" style="color:var(--accent)">Portal de Transparencia</a>.';
-    prompt = `Eres experta en la Ley 19/2013, de 9 de diciembre, de transparencia, acceso a la información pública y buen gobierno de España.
+    // Construir párrafo de formato si se seleccionó
+    const formatoTexto = formato === 'excel' ? 'tipo base de datos (.csv, .xls o .xlsx)' : formato === 'electronico' ? 'electrónico reutilizable' : formato === 'pdf' ? 'PDF' : formato === 'papel' ? 'papel o copia certificada' : '';
+    const formatoParrafo = (formato === 'excel' || formato === 'electronico') ? '\n\nLes agradecería si pudieran remitir la información en un formato accesible ' + formatoTexto + '.' : formatoTexto ? '\n\nLes agradecería si pudieran remitir la información en formato ' + formatoTexto + '.' : '';
 
-Redacta una solicitud de acceso a información pública formal y completa con estos datos:
-- Organismo destinatario: ${organismo}
+    prompt = `Eres experta en la Ley 19/2013 de transparencia. Completa esta plantilla de solicitud de acceso a información pública.
+
+DATOS:
+- Organismo: ${organismo}
 - Materia: ${materia}
-- Información solicitada: ${desc}
-${formato ? `- Formato preferido de entrega: ${formato}` : ''}
+- Descripción: ${desc}
 
-La solicitud debe:
-1. Encabezado formal dirigido a la Unidad de Información del organismo
-2. Identificar el amparo legal: art. 17 Ley 19/2013 y, si aplica, art. 13 del Real Decreto 208/1996
-3. Exponer con precisión el objeto de la solicitud
-4. Indicar formato preferido de entrega si se especificó
-5. Añadir la frase: «En caso de no existir la información en el formato indicado, se acepta cualquier formato reutilizable»
-6. Mencionar el plazo legal de 30 días hábiles (art. 20 Ley 19/2013)
-7. Fórmula de cortesía y espacio para [LUGAR], [FECHA], [NOMBRE Y APELLIDOS], [DNI]
+INSTRUCCIONES:
+- En la sección marcada con [PUNTOS], redacta entre 2 y 4 guiones detallados basándote en la descripción. Cada punto debe ser concreto, con periodos temporales si aplica, desglosado por categorías si procede. Usa el mismo estilo que el ejemplo de la plantilla.
+- Si el organismo es autonómico o local, sustituye [LEY AUTONOMICA] por "y la ley autonómica de transparencia aplicable". Si es estatal, elimina [LEY AUTONOMICA].
+- Responde ÚNICAMENTE con el texto final de la carta, sin explicaciones ni comentarios.
 
-Responde SOLO con el texto del documento, sin explicaciones previas ni posteriores.`;
+PLANTILLA:
+Estimado ${organismo}:
+
+En virtud de la Ley 19/2013 de Transparencia, Acceso a la Información Pública y Buen Gobierno [LEY AUTONOMICA], les solicito la siguiente información:
+
+[PUNTOS]
+
+En caso de que se disponga de contratos, acuerdos o adjudicaciones relacionados, solicito que se me entregue una copia. En caso de que la información no se encuentre tal y como la demando, solicito que se me entregue tal y como consta en los registros públicos, para evitar así cualquier acción previa de reelaboración. Recuerdo también el derecho de acceso de forma parcial. En el caso de que no se me entregue parte de lo solicitado o se deniegue, no es óbice para no entregar el resto de lo pedido. Se trata de información de indudable interés público sobre la que no prevalecen límites para denegar lo solicitado.${formatoParrafo}
+
+Les recuerdo que disponen de un plazo máximo de un mes para remitir dicha información. Muchas gracias.
+Quedo a su disposición para las aclaraciones que estimen oportunas.
+
+[NOMBRE Y APELLIDOS]
+[EMAIL]
+[TELÉFONO]`;
 
   } else {
     const organismo  = document.getElementById('r-organismo').value.trim();
